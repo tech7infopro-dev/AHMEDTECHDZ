@@ -2,7 +2,7 @@
 // SERVICE WORKER - PWA
 // ============================================
 
-const CACHE_NAME = 't3chpro-v1';
+const CACHE_NAME = 'techpro-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -49,4 +49,5 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
 

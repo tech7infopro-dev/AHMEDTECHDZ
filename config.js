@@ -1,11 +1,6 @@
 // ============================================
 // CONFIGURATION FILE - Security Settings & Firebase
-// EXAMPLE FILE - DO NOT USE IN PRODUCTION
-// 
-// Instructions:
-// 1. Copy this file to config.js
-// 2. Replace all placeholder values with your actual credentials
-// 3. Never commit config.js to GitHub (add it to .gitignore)
+// Reads from Environment Variables (Vercel) or uses defaults
 // ============================================
 
 // Helper to get environment variable with fallback
@@ -14,68 +9,52 @@ const getEnv = (key, defaultValue = null) => {
     if (typeof process !== 'undefined' && process.env && process.env[key]) {
         return process.env[key];
     }
-    
+
     // Check for meta tags (for client-side)
     const meta = document.querySelector(`meta[name="${key}"]`);
     if (meta && meta.content && !meta.content.includes('%') && meta.content !== 'your-api-key') {
         return meta.content;
     }
-    
+
     return defaultValue;
 };
 
 // ============================================
-// DEFAULT OWNER ACCOUNT - CHANGE THESE VALUES
+// DEFAULT OWNER ACCOUNT - EMAIL BASED
+// ⚠️ IMPORTANT: Change these before deployment!
 // ============================================
-// ⚠️ IMPORTANT: Change these default credentials before first use!
-const DEFAULT_OWNER_USERNAME = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_EMAIL', 'youremail@gmil.com');
-const DEFAULT_OWNER_NAME = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_NAME', 'Administrator');
-const DEFAULT_OWNER_PASSWORD = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD', 'CHANGE_THIS_PASSWORD_123!');
+const DEFAULT_OWNER_EMAIL = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_EMAIL', 'admin@example.com');
+const DEFAULT_OWNER_NAME = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_NAME', 'ADMIN');
+const DEFAULT_OWNER_PASSWORD = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD', 'CHANGE_THIS_PASSWORD');
 
 const DEFAULT_OWNER = {
-    id: 1,
+    id: DEFAULT_OWNER_NAME,
     name: DEFAULT_OWNER_NAME,
     email: DEFAULT_OWNER_EMAIL,
     password: null,
-    passwordHash: null,
-    salt: null,
     role: "owner",
     created: new Date().toISOString(),
     banned: false,
     lastLogin: null,
-    loginAttempts: 0,
-    lockedUntil: null,
     firebaseUid: null
 };
 
 const CONFIG = {
     // ============================================
-    // FIREBASE CONFIGURATION - REPLACE WITH YOUR VALUES
-    // Get these from: Firebase Console > Project Settings > General > Your apps
+    // FIREBASE CONFIGURATION
+    // ⚠️ IMPORTANT: Replace with your actual Firebase credentials!
+    // Get these from: Firebase Console → Project Settings → General → Your apps
     // ============================================
     FIREBASE: {
-        // 🔥 REQUIRED: Your Firebase API Key
         API_KEY: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY', 'YOUR_FIREBASE_API_KEY_HERE'),
-        
-        // 🔥 REQUIRED: Your Firebase Auth Domain (usually: your-project.firebaseapp.com)
         AUTH_DOMAIN: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', 'your-project.firebaseapp.com'),
-        
-        // 🔥 REQUIRED: Your Firebase Project ID
         PROJECT_ID: getEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'your-project-id'),
-        
-        // 🔥 REQUIRED: Your Firebase Storage Bucket
         STORAGE_BUCKET: getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', 'your-project.appspot.com'),
-        
-        // 🔥 REQUIRED: Your Firebase Messaging Sender ID
         MESSAGING_SENDER_ID: getEnv('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', '123456789'),
-        
-        // 🔥 REQUIRED: Your Firebase App ID
         APP_ID: getEnv('NEXT_PUBLIC_FIREBASE_APP_ID', '1:123456789:web:abcdef123456'),
-        
-        // Optional: Your Firebase Measurement ID (for Analytics)
         MEASUREMENT_ID: getEnv('NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID', 'G-XXXXXXXXXX'),
 
-        // Firestore Collections - You can customize these names if needed
+        // Firestore Collections
         COLLECTIONS: {
             USERS: 'users',
             FREE_MACS: 'free_macs',
@@ -98,7 +77,9 @@ const CONFIG = {
     },
 
     // ============================================
-    // SECURITY CONFIGURATION - CUSTOMIZE AS NEEDED
+    // SECURITY CONFIGURATION
+    // ⚠️ IMPORTANT: Change these secrets before production!
+    // Use strong random strings for production
     // ============================================
     SECURITY: {
         PBKDF2: {
@@ -108,13 +89,13 @@ const CONFIG = {
             SALT_LENGTH: 32,
             LEGACY_ITERATIONS: 100000,
             AUTO_UPGRADE: true,
-            // ⚠️ IMPORTANT: Generate a random 64-character hex string for production
-            SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', 'GENERATE_RANDOM_64_CHAR_HEX_STRING_HERE_FOR_PRODUCTION')
+            // ⚠️ Change this salt in production!
+            SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', 'CHANGE_THIS_SALT_TO_RANDOM_STRING_32_CHARS_MIN')
         },
 
         SESSION: {
-            // ⚠️ IMPORTANT: Use a strong, random secret (min 32 characters)
-            SECRET: getEnv('SESSION_SECRET', 'your-session-secret-here-min-32-characters-long'),
+            // ⚠️ Change this secret in production! Use a strong random string (64+ chars)
+            SECRET: getEnv('SESSION_SECRET', 'CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET_KEY_MIN_64_CHARS'),
             TIMEOUT: parseInt(getEnv('SESSION_TIMEOUT', '3600000')),
             RENEWAL_THRESHOLD: 300000,
             ABSOLUTE_TIMEOUT: 28800000,
@@ -185,15 +166,15 @@ const CONFIG = {
         },
 
         ENCRYPTION: {
-            // ⚠️ IMPORTANT: Generate a random 64-character hex string for production
-            MASTER_KEY: getEnv('ENCRYPTION_KEY', 'YOUR_64_CHARACTER_HEX_ENCRYPTION_KEY_HERE_FOR_256_BIT_SECURITY'),
+            // ⚠️ Change this key in production! Use a strong random string (64+ chars)
+            MASTER_KEY: getEnv('ENCRYPTION_KEY', 'CHANGE_THIS_TO_A_STRONG_RANDOM_ENCRYPTION_KEY_64_CHARS'),
             AUTO_ROTATE: getEnv('AUTO_ROTATE_KEYS', 'false') === 'true',
             ROTATION_INTERVAL_DAYS: parseInt(getEnv('KEY_ROTATION_INTERVAL', '30'))
         }
     },
 
     // ============================================
-    // DEFAULT ACCOUNTS
+    // DEFAULT ACCOUNTS - EMAIL BASED
     // ============================================
     DEFAULT_USERS: [DEFAULT_OWNER],
 
@@ -202,7 +183,7 @@ const CONFIG = {
     },
 
     // ============================================
-    // PERMISSIONS MATRIX - CUSTOMIZE AS NEEDED
+    // PERMISSIONS MATRIX
     // ============================================
     PERMISSIONS: {
         owner: [
@@ -296,11 +277,11 @@ const CONFIG = {
     },
 
     // ============================================
-    // STORAGE KEYS - DO NOT CHANGE UNLESS NECESSARY
+    // STORAGE KEYS
     // ============================================
     STORAGE_KEYS: {
-        USERS: 'iptv_users',
-        CURRENT_USER: 'iptv_current_user',
+        USERS: 'iptv_users_v2',
+        CURRENT_USER: 'iptv_current_user_v2',
         NEXT_USER_ID: 'iptv_next_id',
         FREE_MACS: 'iptv_free_macs',
         NEXT_MAC_ID: 'iptv_next_mac_id',
@@ -329,7 +310,7 @@ const CONFIG = {
     },
 
     // ============================================
-    // SYSTEM SETTINGS - CUSTOMIZE AS NEEDED
+    // SYSTEM SETTINGS
     // ============================================
     SYSTEM: {
         CHECK_EXPIRY_INTERVAL: 3600000,
@@ -343,7 +324,7 @@ const CONFIG = {
         AUTO_LOGOUT_ON_CLOSE: false,
         SECURE_CONTEXT_REQUIRED: true,
         DEBUG_MODE: getEnv('DEBUG_MODE', 'false') === 'true',
-        APP_NAME: getEnv('APP_NAME', 'AHMEDTECH DZ IPTV'),
+        APP_NAME: getEnv('APP_NAME', 'IPTV Management System'),
         APP_URL: getEnv('APP_URL', 'https://your-domain.vercel.app'),
         SUPPORT_EMAIL: getEnv('SUPPORT_EMAIL', 'support@yourdomain.com'),
         ENABLE_REGISTRATION: getEnv('ENABLE_REGISTRATION', 'true') === 'true',
@@ -352,7 +333,7 @@ const CONFIG = {
     },
 
     // ============================================
-    // SECURITY HEADERS - DO NOT CHANGE UNLESS YOU KNOW WHAT YOU'RE DOING
+    // SECURITY HEADERS
     // ============================================
     SECURITY_HEADERS: {
         'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://*.firebaseio.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;",
@@ -371,38 +352,5 @@ const CONFIG = {
 
 // Prevent modification
 Object.freeze(CONFIG);
-
-// ============================================
-// SETUP INSTRUCTIONS
-// ============================================
-/*
-1. Copy this file to config.js
-2. Get your Firebase credentials from:
-   https://console.firebase.google.com/project/_/settings/general/
-   
-3. Replace these values in config.js:
-   - YOUR_FIREBASE_API_KEY_HERE
-   - your-project.firebaseapp.com
-   - your-project-id
-   - your-project.appspot.com
-   - 123456789 (Messaging Sender ID)
-   - 1:123456789:web:abcdef123456 (App ID)
-   - G-XXXXXXXXXX (Measurement ID)
-   
-4. Generate secure random strings for:
-   - NEXT_PUBLIC_PASSWORD_SALT (64 hex characters)
-   - SESSION_SECRET (min 32 characters)
-   - ENCRYPTION_KEY (64 hex characters)
-   
-5. Change default owner credentials:
-   - DEFAULT_OWNER_EMAIL
-   - DEFAULT_OWNER_NAME  
-   - DEFAULT_OWNER_PASSWORD
-   
-6. Add config.js to .gitignore to prevent committing secrets!
-
-7. For Vercel deployment, add environment variables in:
-   Vercel Dashboard > Project Settings > Environment Variables
-*/
 
 
