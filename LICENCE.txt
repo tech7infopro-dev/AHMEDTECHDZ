@@ -1,0 +1,8 @@
+📝 License
+MIT License - feel free to use, modify, and distribute!
+<p align="center">
+  <b>Built with ❤️ by TECHPRO</b>
+  <br>
+  <i>4 months of learning, debugging, and persistence</i>
+</p>
+```
