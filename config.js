@@ -21,11 +21,11 @@ const getEnv = (key, defaultValue = null) => {
 
 // ============================================
 // DEFAULT OWNER ACCOUNT - EMAIL BASED
-// ⚠️  IMPORTANT: Change these before deployment!
+// ⚠️ IMPORTANT: Change these before deployment!
 // ============================================
 const DEFAULT_OWNER_EMAIL = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_EMAIL', 'admin@example.com');
 const DEFAULT_OWNER_NAME = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_NAME', 'ADMIN');
-const DEFAULT_OWNER_PASSWORD = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD', 'ChangeThisPassword123!');
+const DEFAULT_OWNER_PASSWORD = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD', 'CHANGE_THIS_PASSWORD');
 
 const DEFAULT_OWNER = {
     id: DEFAULT_OWNER_NAME,
@@ -42,14 +42,14 @@ const DEFAULT_OWNER = {
 const CONFIG = {
     // ============================================
     // FIREBASE CONFIGURATION
-    // ⚠️  IMPORTANT: Replace with your Firebase project credentials!
-    // Get these from: Firebase Console > Project Settings > General > Your apps
+    // ⚠️ IMPORTANT: Replace with your actual Firebase credentials!
+    // Get these from: Firebase Console → Project Settings → General → Your apps
     // ============================================
     FIREBASE: {
         API_KEY: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY', 'YOUR_FIREBASE_API_KEY_HERE'),
-        AUTH_DOMAIN: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', 'your-project-id.firebaseapp.com'),
+        AUTH_DOMAIN: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', 'your-project.firebaseapp.com'),
         PROJECT_ID: getEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'your-project-id'),
-        STORAGE_BUCKET: getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', 'your-project-id.appspot.com'),
+        STORAGE_BUCKET: getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', 'your-project.appspot.com'),
         MESSAGING_SENDER_ID: getEnv('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', '123456789'),
         APP_ID: getEnv('NEXT_PUBLIC_FIREBASE_APP_ID', '1:123456789:web:abcdef123456'),
         MEASUREMENT_ID: getEnv('NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID', 'G-XXXXXXXXXX'),
@@ -62,7 +62,6 @@ const CONFIG = {
             TICKETS: 'tickets',
             TELEGRAM_LINKS: 'telegram_links',
             IPTV_APPS: 'iptv_apps',
-            TUTORIAL_VIDEOS: 'tutorial_videos',
             SECURITY_LOGS: 'security_logs',
             SYSTEM_CONFIG: 'system_config'
         },
@@ -79,7 +78,8 @@ const CONFIG = {
 
     // ============================================
     // SECURITY CONFIGURATION
-    // ⚠️  IMPORTANT: Generate new secure keys for production!
+    // ⚠️ IMPORTANT: Change these secrets before production!
+    // Use strong random strings for production
     // ============================================
     SECURITY: {
         PBKDF2: {
@@ -89,17 +89,17 @@ const CONFIG = {
             SALT_LENGTH: 32,
             LEGACY_ITERATIONS: 100000,
             AUTO_UPGRADE: true,
-            // ⚠️  Generate a new random salt for production!
-            SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', 'YOUR_RANDOM_SALT_HERE_MIN_32_CHARS')
+            // ⚠️ Change this salt in production!
+            SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', 'CHANGE_THIS_SALT_TO_RANDOM_STRING_32_CHARS_MIN')
         },
 
         SESSION: {
-            // ⚠️  Use a strong random string (min 32 chars) for production!
-            SECRET: getEnv('SESSION_SECRET', 'YOUR_SESSION_SECRET_KEY_HERE_CHANGE_THIS'),
-            TIMEOUT: parseInt(getEnv('SESSION_TIMEOUT', '3600000')), // 1 hour
-            RENEWAL_THRESHOLD: 300000, // 5 minutes
-            ABSOLUTE_TIMEOUT: 28800000, // 8 hours
-            IDLE_TIMEOUT: 1800000, // 30 minutes
+            // ⚠️ Change this secret in production! Use a strong random string (64+ chars)
+            SECRET: getEnv('SESSION_SECRET', 'CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET_KEY_MIN_64_CHARS'),
+            TIMEOUT: parseInt(getEnv('SESSION_TIMEOUT', '3600000')),
+            RENEWAL_THRESHOLD: 300000,
+            ABSOLUTE_TIMEOUT: 28800000,
+            IDLE_TIMEOUT: 1800000,
             BIND_TO_IP: false,
             BIND_TO_USER_AGENT: true
         },
@@ -112,8 +112,8 @@ const CONFIG = {
 
         RATE_LIMIT: {
             MAX_ATTEMPTS: parseInt(getEnv('MAX_LOGIN_ATTEMPTS', '5')),
-            WINDOW_MS: parseInt(getEnv('RATE_LIMIT_WINDOW', '900000')), // 15 minutes
-            BLOCK_DURATION_MS: parseInt(getEnv('LOCKOUT_DURATION', '1800000')) // 30 minutes
+            WINDOW_MS: parseInt(getEnv('RATE_LIMIT_WINDOW', '900000')),
+            BLOCK_DURATION_MS: parseInt(getEnv('LOCKOUT_DURATION', '1800000'))
         },
 
         SMART_DELAY: {
@@ -166,8 +166,8 @@ const CONFIG = {
         },
 
         ENCRYPTION: {
-            // ⚠️  Generate a new secure master key for production!
-            MASTER_KEY: getEnv('ENCRYPTION_KEY', 'YOUR_MASTER_ENCRYPTION_KEY_HERE_32CHARS'),
+            // ⚠️ Change this key in production! Use a strong random string (64+ chars)
+            MASTER_KEY: getEnv('ENCRYPTION_KEY', 'CHANGE_THIS_TO_A_STRONG_RANDOM_ENCRYPTION_KEY_64_CHARS'),
             AUTO_ROTATE: getEnv('AUTO_ROTATE_KEYS', 'false') === 'true',
             ROTATION_INTERVAL_DAYS: parseInt(getEnv('KEY_ROTATION_INTERVAL', '30'))
         }
@@ -203,7 +203,6 @@ const CONFIG = {
             { id: 'manage_free_xtream', name: 'Manage Free Xtream', allowed: true },
             { id: 'manage_telegram', name: 'Manage Telegram Links', allowed: true },
             { id: 'manage_iptv_apps', name: 'Manage IPTV Apps', allowed: true },
-            { id: 'manage_tutorial_videos', name: 'Manage Tutorial Videos', allowed: true },
             { id: 'firebase_sync', name: 'Firebase Sync Control', allowed: true }
         ],
         admin: [
@@ -217,7 +216,6 @@ const CONFIG = {
             { id: 'manage_free_mac', name: 'Manage Free MACs', allowed: true },
             { id: 'manage_free_xtream', name: 'Manage Free Xtream', allowed: true },
             { id: 'manage_iptv_apps', name: 'Manage IPTV Apps', allowed: true },
-            { id: 'manage_tutorial_videos', name: 'Manage Tutorial Videos', allowed: true },
             { id: 'delete_user', name: 'Delete Users', allowed: false },
             { id: 'change_role', name: 'Change User Roles', allowed: false },
             { id: 'view_logs', name: 'View System Logs', allowed: false },
@@ -232,7 +230,6 @@ const CONFIG = {
             { id: 'view_free_xtream', name: 'View Free Xtream', allowed: true },
             { id: 'view_telegram', name: 'View Telegram Links', allowed: true },
             { id: 'view_iptv_apps', name: 'View IPTV Apps', allowed: true },
-            { id: 'view_tutorial_videos', name: 'View Tutorial Videos', allowed: true },
             { id: 'view_all_users', name: 'View All Users', allowed: false },
             { id: 'create_user', name: 'Create New Users', allowed: false },
             { id: 'edit_user', name: 'Edit Users', allowed: false },
@@ -279,12 +276,6 @@ const CONFIG = {
         user: { canView: true, canAdd: false, canEdit: false, canDelete: false }
     },
 
-    TUTORIAL_VIDEOS_PERMISSIONS: {
-        owner: { canView: true, canAdd: true, canEdit: true, canDelete: true },
-        admin: { canView: true, canAdd: true, canEdit: true, canDelete: true },
-        user: { canView: true, canAdd: false, canEdit: false, canDelete: false }
-    },
-
     // ============================================
     // STORAGE KEYS
     // ============================================
@@ -301,8 +292,6 @@ const CONFIG = {
         TELEGRAM_LINKS: 'iptv_telegram_links',
         IPTV_APPS: 'iptv_apps',
         NEXT_APP_ID: 'iptv_next_app_id',
-        TUTORIAL_VIDEOS: 'iptv_tutorial_videos',
-        NEXT_VIDEO_ID: 'iptv_next_video_id',
         CSRF_TOKEN: 'iptv_csrf_token',
         SESSION_DATA: 'iptv_session',
         RATE_LIMIT: 'iptv_rate_limit',
@@ -363,3 +352,5 @@ const CONFIG = {
 
 // Prevent modification
 Object.freeze(CONFIG);
+
+
