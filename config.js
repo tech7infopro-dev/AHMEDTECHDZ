@@ -3,19 +3,25 @@
 // ⚠️  NEVER put real values here - use Vercel Environment Variables only!
 // ============================================
 
-// Helper to get environment variable with fallback
 const getEnv = (key, defaultValue = null) => {
-    // Check for Vercel env vars (injected at build time)
-    if (typeof process !== 'undefined' && process.env && process.env[key]) {
-        return process.env[key];
+    // ✅ الأولوية لـ window.ENV (من inject-env.js)
+    if (typeof window !== 'undefined' && window.ENV && window.ENV[key]) {
+        return window.ENV[key];
     }
-
-    // Check for meta tags (for client-side)
-    const meta = document.querySelector(`meta[name="${key}"]`);
-    if (meta && meta.content && !meta.content.includes('%') && meta.content !== 'your-api-key') {
-        return meta.content;
+    
+    // ✅ ثم window.process.env
+    if (typeof window !== 'undefined' && window.process && window.process.env[key]) {
+        return window.process.env[key];
     }
-
+    
+    // ✅ ثم meta tags (للتوافق مع الإصدارات القديمة)
+    if (typeof document !== 'undefined') {
+        const meta = document.querySelector(`meta[name="${key}"]`);
+        if (meta && meta.content && !meta.content.includes('%') && !meta.content.startsWith('your-')) {
+            return meta.content;
+        }
+    }
+    
     return defaultValue;
 };
 
@@ -40,10 +46,6 @@ const DEFAULT_OWNER = {
 };
 
 const CONFIG = {
-    // ============================================
-    // FIREBASE CONFIGURATION
-    // ⚠️  Set these in Vercel Environment Variables only!
-    // ============================================
     FIREBASE: {
         API_KEY: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY', ''),
         AUTH_DOMAIN: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', ''),
@@ -73,9 +75,6 @@ const CONFIG = {
         }
     },
 
-    // ============================================
-    // SECURITY CONFIGURATION
-    // ============================================
     SECURITY: {
         PBKDF2: {
             ITERATIONS: parseInt(getEnv('NEXT_PUBLIC_PBKDF2_ITERATIONS', '310000')),
@@ -86,7 +85,7 @@ const CONFIG = {
             AUTO_UPGRADE: true,
             SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', 'CHANGE_THIS_IN_ENV_VARS')
         },
-
+        // ... باقي الإعدادات كما هي
         SESSION: {
             SECRET: 'SESSION_SECRET_SHOULD_BE_IN_ENV',
             TIMEOUT: parseInt(getEnv('SESSION_TIMEOUT', '3600000')),
