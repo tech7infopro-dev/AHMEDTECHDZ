@@ -1,41 +1,23 @@
 // ============================================
-// CONFIGURATION FILE - Security Settings & Firebase
-// ⚠️  NEVER put real values here - use Vercel Environment Variables only!
+// CONFIGURATION FILE - SECURITY HARDENED
 // ============================================
 
-// ✅ FIXED: تحسين قراءة المتغيرات مع fallback من window.ENV
-const getEnv = (key, defaultValue = null) => {
-    // ✅ محاولة 1: window.ENV (من inject-env.js)
-    if (typeof window !== 'undefined' && window.ENV && window.ENV[key] && 
-        !window.ENV[key].startsWith('%') && window.ENV[key].length > 5) {
+const getEnv = (key, defaultValue) => {
+    if (typeof window !== 'undefined' && window.ENV && window.ENV[key]) {
         return window.ENV[key];
     }
-    
-    // ✅ محاولة 2: window.process.env
-    if (typeof window !== 'undefined' && window.process && window.process.env && 
-        window.process.env[key] && !window.process.env[key].startsWith('%') && 
-        window.process.env[key].length > 5) {
+    if (typeof window !== 'undefined' && window.process && window.process.env[key]) {
         return window.process.env[key];
     }
-    
-    // ✅ محاولة 3: meta tags (للتوافق مع الإصدارات القديمة)
     if (typeof document !== 'undefined') {
         const meta = document.querySelector(`meta[name="${key}"]`);
-        if (meta && meta.content && 
-            !meta.content.startsWith('%') && 
-            !meta.content.includes('your-') &&
-            meta.content.length > 5) {
+        if (meta && meta.content && !meta.content.startsWith('%') && meta.content.length > 5) {
             return meta.content;
         }
     }
-    
     return defaultValue;
 };
 
-// ============================================
-// DEFAULT OWNER ACCOUNT
-// ⚠️  Set these in Vercel Environment Variables only!
-// ============================================
 const DEFAULT_OWNER_EMAIL = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_EMAIL', 'owner@example.com');
 const DEFAULT_OWNER_NAME = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_NAME', 'OWNER');
 const DEFAULT_OWNER_PASSWORD = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD', '');
@@ -53,10 +35,6 @@ const DEFAULT_OWNER = {
 };
 
 const CONFIG = {
-    // ============================================
-    // FIREBASE CONFIGURATION
-    // ⚠️  Set these in Vercel Environment Variables only!
-    // ============================================
     FIREBASE: {
         API_KEY: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY', ''),
         AUTH_DOMAIN: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', ''),
@@ -86,9 +64,6 @@ const CONFIG = {
         }
     },
 
-    // ============================================
-    // SECURITY CONFIGURATION
-    // ============================================
     SECURITY: {
         PBKDF2: {
             ITERATIONS: parseInt(getEnv('NEXT_PUBLIC_PBKDF2_ITERATIONS', '310000')),
@@ -313,7 +288,7 @@ const CONFIG = {
         SESSION_WARNING_BEFORE_TIMEOUT: 300000,
         AUTO_LOGOUT_ON_CLOSE: false,
         SECURE_CONTEXT_REQUIRED: true,
-        DEBUG_MODE: getEnv('DEBUG_MODE', 'false') === 'true',
+        DEBUG_MODE: false, // ✅ FORCED to false
         APP_NAME: getEnv('APP_NAME', 'AHMEDTECH DZ IPTV'),
         APP_URL: getEnv('APP_URL', 'https://your-domain.vercel.app'),
         SUPPORT_EMAIL: getEnv('SUPPORT_EMAIL', 'support@yourdomain.com'),
@@ -337,10 +312,7 @@ const CONFIG = {
     }
 };
 
-// ✅ DEBUG: طباعة حالة Firebase
-console.log('[Config] Firebase API Key present:', CONFIG.FIREBASE.API_KEY ? 'YES' : 'NO');
-console.log('[Config] Firebase Project ID:', CONFIG.FIREBASE.PROJECT_ID || 'NOT SET');
-
+// ✅ NO console.log here - completely silent
 Object.freeze(CONFIG);
 
 
