@@ -1,18 +1,20 @@
 // ============================================
-// CONFIGURATION FILE
+// CONFIGURATION FILE - Security Settings & Firebase
 // ============================================
 
 const getEnv = (key, defaultValue = null, isSecret = false) => {
-    // من window.ENV (المُحمل من inject-env.js)
-    if (window.ENV && window.ENV[key]) {
-        return window.ENV[key];
-    }
-    
-    // من meta tags مباشرة
     const meta = document.querySelector(`meta[name="${key}"]`);
     if (meta && meta.content) {
         const content = meta.content.trim();
-        if (content && !content.includes('%') && !content.includes('your-')) {
+        if (content && 
+            content !== '' && 
+            !content.includes('%') && 
+            content !== 'your-api-key' &&
+            content !== 'CHANGE_THIS_SALT_TO_RANDOM_STRING_32_CHARS_MIN' &&
+            content !== 'CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET_KEY_MIN_64_CHARS' &&
+            content !== 'CHANGE_THIS_TO_A_STRONG_RANDOM_ENCRYPTION_KEY_64_CHARS' &&
+            content !== 'undefined' &&
+            content !== 'null') {
             return content;
         }
     }
@@ -21,9 +23,6 @@ const getEnv = (key, defaultValue = null, isSecret = false) => {
     return defaultValue;
 };
 
-// ============================================
-// DEFAULT OWNER
-// ============================================
 const DEFAULT_OWNER_EMAIL = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_EMAIL', 'admin@example.com');
 const DEFAULT_OWNER_NAME = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_NAME', 'ADMIN');
 const DEFAULT_OWNER_PASSWORD = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD', null, true);
@@ -40,9 +39,6 @@ const DEFAULT_OWNER = {
     firebaseUid: null
 };
 
-// ============================================
-// CONFIG
-// ============================================
 const CONFIG = {
     FIREBASE: {
         API_KEY: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY', 'YOUR_FIREBASE_API_KEY_HERE'),
@@ -81,11 +77,11 @@ const CONFIG = {
             SALT_LENGTH: 32,
             LEGACY_ITERATIONS: 100000,
             AUTO_UPGRADE: true,
-            SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', null, true) // ✅ لا default
+            SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', null, true)
         },
 
         SESSION: {
-            SECRET: getEnv('SESSION_SECRET', null, true), // ✅ لا default
+            SECRET: getEnv('SESSION_SECRET', null, true),
             TIMEOUT: parseInt(getEnv('SESSION_TIMEOUT') || '3600000'),
             RENEWAL_THRESHOLD: 300000,
             ABSOLUTE_TIMEOUT: 28800000,
@@ -156,7 +152,7 @@ const CONFIG = {
         },
 
         ENCRYPTION: {
-            MASTER_KEY: getEnv('ENCRYPTION_KEY', null, true), // ✅ لا default
+            MASTER_KEY: getEnv('ENCRYPTION_KEY', null, true),
             AUTO_ROTATE: getEnv('AUTO_ROTATE_KEYS') === 'true',
             ROTATION_INTERVAL_DAYS: parseInt(getEnv('KEY_ROTATION_INTERVAL') || '30')
         }
@@ -168,12 +164,94 @@ const CONFIG = {
         [DEFAULT_OWNER_EMAIL]: DEFAULT_OWNER_PASSWORD
     } : {},
 
-    PERMISSIONS: { /* ... نفس السابق ... */ },
-    MAC_PERMISSIONS: { /* ... نفس السابق ... */ },
-    XTREAM_PERMISSIONS: { /* ... نفس السابق ... */ },
-    TELEGRAM_PERMISSIONS: { /* ... نفس السابق ... */ },
-    IPTV_APPS_PERMISSIONS: { /* ... نفس السابق ... */ },
-    
+    PERMISSIONS: {
+        owner: [
+            { id: 'view_all_users', name: 'View All Users', allowed: true },
+            { id: 'create_user', name: 'Create New Users', allowed: true },
+            { id: 'edit_user', name: 'Edit Users', allowed: true },
+            { id: 'delete_user', name: 'Delete Users', allowed: true },
+            { id: 'ban_user', name: 'Ban Users', allowed: true },
+            { id: 'unban_user', name: 'Unban Users', allowed: true },
+            { id: 'change_role', name: 'Change User Roles', allowed: true },
+            { id: 'view_logs', name: 'View System Logs', allowed: true },
+            { id: 'system_settings', name: 'System Settings', allowed: true },
+            { id: 'copy_content', name: 'Copy Content', allowed: true },
+            { id: 'export_data', name: 'Export Data', allowed: true },
+            { id: 'full_access', name: 'Full System Access', allowed: true },
+            { id: 'manage_free_mac', name: 'Manage Free MACs', allowed: true },
+            { id: 'manage_free_xtream', name: 'Manage Free Xtream', allowed: true },
+            { id: 'manage_telegram', name: 'Manage Telegram Links', allowed: true },
+            { id: 'manage_iptv_apps', name: 'Manage IPTV Apps', allowed: true },
+            { id: 'firebase_sync', name: 'Firebase Sync Control', allowed: true }
+        ],
+        admin: [
+            { id: 'view_all_users', name: 'View All Users', allowed: true },
+            { id: 'create_user', name: 'Create New Users', allowed: true },
+            { id: 'edit_user', name: 'Edit Users', allowed: true },
+            { id: 'ban_user', name: 'Ban Users', allowed: true },
+            { id: 'unban_user', name: 'Unban Users', allowed: true },
+            { id: 'copy_content', name: 'Copy Content', allowed: true },
+            { id: 'export_data', name: 'Export Data', allowed: true },
+            { id: 'manage_free_mac', name: 'Manage Free MACs', allowed: true },
+            { id: 'manage_free_xtream', name: 'Manage Free Xtream', allowed: true },
+            { id: 'manage_iptv_apps', name: 'Manage IPTV Apps', allowed: true },
+            { id: 'delete_user', name: 'Delete Users', allowed: false },
+            { id: 'change_role', name: 'Change User Roles', allowed: false },
+            { id: 'view_logs', name: 'View System Logs', allowed: false },
+            { id: 'system_settings', name: 'System Settings', allowed: false },
+            { id: 'full_access', name: 'Full System Access', allowed: false },
+            { id: 'manage_telegram', name: 'Manage Telegram Links', allowed: false },
+            { id: 'firebase_sync', name: 'Firebase Sync Control', allowed: false }
+        ],
+        user: [
+            { id: 'copy_content', name: 'Copy Content', allowed: true },
+            { id: 'view_free_mac', name: 'View Free MACs', allowed: true },
+            { id: 'view_free_xtream', name: 'View Free Xtream', allowed: true },
+            { id: 'view_telegram', name: 'View Telegram Links', allowed: true },
+            { id: 'view_iptv_apps', name: 'View IPTV Apps', allowed: true },
+            { id: 'view_all_users', name: 'View All Users', allowed: false },
+            { id: 'create_user', name: 'Create New Users', allowed: false },
+            { id: 'edit_user', name: 'Edit Users', allowed: false },
+            { id: 'delete_user', name: 'Delete Users', allowed: false },
+            { id: 'ban_user', name: 'Ban Users', allowed: false },
+            { id: 'unban_user', name: 'Unban Users', allowed: false },
+            { id: 'change_role', name: 'Change User Roles', allowed: false },
+            { id: 'view_logs', name: 'View System Logs', allowed: false },
+            { id: 'system_settings', name: 'System Settings', allowed: false },
+            { id: 'export_data', name: 'Export Data', allowed: false },
+            { id: 'full_access', name: 'Full System Access', allowed: false },
+            { id: 'manage_free_mac', name: 'Manage Free MACs', allowed: false },
+            { id: 'manage_free_xtream', name: 'Manage Free Xtream', allowed: false },
+            { id: 'manage_telegram', name: 'Manage Telegram Links', allowed: false },
+            { id: 'manage_iptv_apps', name: 'Manage IPTV Apps', allowed: false },
+            { id: 'firebase_sync', name: 'Firebase Sync Control', allowed: false }
+        ]
+    },
+
+    MAC_PERMISSIONS: {
+        owner: { canView: true, canAdd: true, canEdit: true, canDelete: true },
+        admin: { canView: true, canAdd: true, canEdit: true, canDelete: true },
+        user: { canView: true, canAdd: false, canEdit: false, canDelete: false }
+    },
+
+    XTREAM_PERMISSIONS: {
+        owner: { canView: true, canAdd: true, canEdit: true, canDelete: true },
+        admin: { canView: true, canAdd: true, canEdit: true, canDelete: true },
+        user: { canView: true, canAdd: false, canEdit: false, canDelete: false }
+    },
+
+    TELEGRAM_PERMISSIONS: {
+        owner: { canView: true, canEdit: true },
+        admin: { canView: true, canEdit: false },
+        user: { canView: true, canEdit: false }
+    },
+
+    IPTV_APPS_PERMISSIONS: {
+        owner: { canView: true, canAdd: true, canEdit: true, canDelete: true },
+        admin: { canView: true, canAdd: true, canEdit: true, canDelete: true },
+        user: { canView: true, canAdd: false, canEdit: false, canDelete: false }
+    },
+
     STORAGE_KEYS: {
         USERS: 'iptv_users_v2',
         CURRENT_USER: 'iptv_current_user_v2',
@@ -215,7 +293,7 @@ const CONFIG = {
         SESSION_WARNING_BEFORE_TIMEOUT: 300000,
         AUTO_LOGOUT_ON_CLOSE: false,
         SECURE_CONTEXT_REQUIRED: true,
-        DEBUG_MODE: false,
+        DEBUG_MODE: false, // ❌ NEVER true in production
         APP_NAME: getEnv('APP_NAME') || 'IPTV Management System',
         APP_URL: getEnv('APP_URL') || 'https://your-domain.vercel.app',
         SUPPORT_EMAIL: getEnv('SUPPORT_EMAIL') || 'support@yourdomain.com',
@@ -240,32 +318,36 @@ const CONFIG = {
 };
 
 // ============================================
-// HIDE SECRETS FROM CONSOLE
+// HIDE SECRETS FROM CONSOLE - CRITICAL
 // ============================================
-const _secrets = {
+
+// Store secrets in closure (private)
+const secureStorage = {
     salt: CONFIG.SECURITY.PBKDF2.SALT,
     sessionSecret: CONFIG.SECURITY.SESSION.SECRET,
     encryptionKey: CONFIG.SECURITY.ENCRYPTION.MASTER_KEY
 };
 
+// Replace with getters that don't expose directly
 Object.defineProperty(CONFIG.SECURITY.PBKDF2, 'SALT', {
-    get: () => _secrets.salt,
+    get: () => secureStorage.salt,
     enumerable: false,
     configurable: false
 });
 
 Object.defineProperty(CONFIG.SECURITY.SESSION, 'SECRET', {
-    get: () => _secrets.sessionSecret,
+    get: () => secureStorage.sessionSecret,
     enumerable: false,
     configurable: false
 });
 
 Object.defineProperty(CONFIG.SECURITY.ENCRYPTION, 'MASTER_KEY', {
-    get: () => _secrets.encryptionKey,
+    get: () => secureStorage.encryptionKey,
     enumerable: false,
     configurable: false
 });
 
+// Freeze everything
 Object.freeze(CONFIG);
 
 

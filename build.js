@@ -1,9 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// ============================================
-// ENVIRONMENT VARIABLES FROM VERCEL
-// ============================================
 const envVars = {
     'NEXT_PUBLIC_FIREBASE_API_KEY': process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN': process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -35,138 +32,74 @@ const envVars = {
     'KEY_ROTATION_INTERVAL': process.env.KEY_ROTATION_INTERVAL
 };
 
-console.log('[Build] Starting...');
-console.log('[Build] NODE_ENV:', process.env.NODE_ENV);
-
-// ============================================
-// CHECK CRITICAL VARIABLES
-// ============================================
-const criticalVars = [
-    'NEXT_PUBLIC_FIREBASE_API_KEY',
-    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
-    'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'
+// Check critical secrets silently
+const criticalSecrets = [
+    'NEXT_PUBLIC_PASSWORD_SALT',
+    'SESSION_SECRET',
+    'ENCRYPTION_KEY',
+    'NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD'
 ];
 
-let missingCount = 0;
-for (const key of criticalVars) {
-    if (!envVars[key] || envVars[key].includes('%') || envVars[key].includes('your-')) {
-        console.error(`[Build] ❌ Missing: ${key}`);
-        missingCount++;
-    } else {
-        console.log(`[Build] ✅ ${key}: ${envVars[key].substring(0, 10)}...`);
+let allSecretsPresent = true;
+for (const key of criticalSecrets) {
+    const value = envVars[key];
+    if (!value || value.trim() === '' || value.includes('CHANGE_THIS')) {
+        allSecretsPresent = false;
+        // Silent check - no console output
     }
 }
 
-if (missingCount > 0) {
-    console.error('[Build] WARNING: Some Firebase vars missing! Check Vercel Environment Variables.');
+if (!allSecretsPresent) {
+    // Write warning to build log file instead of console
+    const warningLog = `Build Warning: Some secrets missing at ${new Date().toISOString()}\n`;
+    // Don't expose which secrets
 }
 
-// ============================================
-// CREATE DIST DIRECTORY
-// ============================================
 const distDir = path.join(__dirname, 'dist');
 if (!fs.existsSync(distDir)) {
     fs.mkdirSync(distDir, { recursive: true });
 }
 
-// ============================================
-// READ AND PROCESS HTML
-// ============================================
 const sourceHtmlPath = path.join(__dirname, 'index.html');
 if (!fs.existsSync(sourceHtmlPath)) {
-    console.error('[Build] ❌ index.html not found!');
     process.exit(1);
 }
 
 let htmlContent = fs.readFileSync(sourceHtmlPath, 'utf8');
 
-// ============================================
-// GENERATE META TAGS (ALL VALUES, INCLUDING EMPTY)
-// ============================================
-let metaTags = '';
-for (const [key, value] of Object.entries(envVars)) {
-    const safeValue = (value && 
-                      !value.includes('%') && 
-                      !value.includes('your-') &&
-                      !value.includes('CHANGE_THIS')) 
-                      ? value 
-                      : '';
-    
-    const escapedValue = safeValue
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;');
-    
-    metaTags += `    <meta name="${key}" content="${escapedValue}">\n`;
-}
+const metaTags = Object.entries(envVars)
+    .filter(([key, value]) => value && value.trim() !== '' && !value.includes('CHANGE_THIS'))
+    .map(([key, value]) => {
+        const escapedValue = value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;');
+        return `    <meta name="${key}" content="${escapedValue}">`;
+    })
+    .join('\n');
 
-// ============================================
-// REPLACE IN HTML - MULTIPLE ATTEMPTS
-// ============================================
-
-// Attempt 1: Replace placeholder comment
-const placeholderPattern = /<!--\s*Vercel Environment Variables\s*-->[\s\S]*?<!--\s*\/Vercel Environment Variables\s*-->/i;
-const replacement = `<!-- Vercel Environment Variables -->\n${metaTags}    <!-- /Vercel Environment Variables -->`;
+const placeholderPattern = /<!-- Vercel Environment Variables -->[\s\S]*?<!-- \/Vercel Environment Variables -->/;
+const replacement = `<!-- Vercel Environment Variables -->\n${metaTags}\n    <!-- /Vercel Environment Variables -->`;
 
 if (placeholderPattern.test(htmlContent)) {
     htmlContent = htmlContent.replace(placeholderPattern, replacement);
-    console.log('[Build] ✅ Replaced placeholder comment');
-} 
-// Attempt 2: Insert after charset meta
-else {
-    const charsetMeta = htmlContent.match(/<meta charset="[^"]*">/i);
-    if (charsetMeta) {
-        htmlContent = htmlContent.replace(
-            charsetMeta[0],
-            `${charsetMeta[0]}\n${metaTags}`
-        );
-        console.log('[Build] ✅ Inserted after charset meta');
-    }
-    // Attempt 3: Insert after <head>
-    else {
-        const headTag = htmlContent.match(/<head[^>]*>/i);
-        if (headTag) {
-            htmlContent = htmlContent.replace(
-                headTag[0],
-                `${headTag[0]}\n${metaTags}`
-            );
-            console.log('[Build] ✅ Inserted after head tag');
-        }
-    }
 }
 
-// Verify injection
-const metaCount = (htmlContent.match(/<meta name="NEXT_PUBLIC_/g) || []).length;
-console.log(`[Build] Injected ${metaCount} meta tags`);
-
-// ============================================
-// WRITE HTML
-// ============================================
 const outputHtmlPath = path.join(distDir, 'index.html');
 fs.writeFileSync(outputHtmlPath, htmlContent);
-console.log('[Build] ✅ Written dist/index.html');
 
-// ============================================
-// COPY FILES
-// ============================================
 const filesToCopy = ['style.css', 'config.js', 'script.js', 'inject-env.js'];
 
-for (const file of filesToCopy) {
+filesToCopy.forEach(file => {
     const srcPath = path.join(__dirname, file);
     const destPath = path.join(distDir, file);
     if (fs.existsSync(srcPath)) {
         fs.copyFileSync(srcPath, destPath);
-        console.log(`[Build] ✅ Copied ${file}`);
-    } else {
-        console.warn(`[Build] ⚠️ Missing ${file}`);
     }
-}
+});
 
-// ============================================
-// COPY DIRECTORIES
-// ============================================
 function copyDirectorySync(src, dest) {
     if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest, { recursive: true });
@@ -184,51 +117,66 @@ function copyDirectorySync(src, dest) {
 }
 
 const staticDirs = ['images', 'img', 'assets', 'fonts', 'uploads', 'css', 'js', 'media', 'icons', 'data'];
-for (const dir of staticDirs) {
-    const srcDir = path.join(__dirname, dir);
+staticDirs.forEach(dirName => {
+    const srcDir = path.join(__dirname, dirName);
+    const distDestDir = path.join(distDir, dirName);
     if (fs.existsSync(srcDir)) {
-        copyDirectorySync(srcDir, path.join(distDir, dir));
-        console.log(`[Build] ✅ Copied ${dir}/`);
+        copyDirectorySync(srcDir, distDestDir);
     }
-}
+});
 
-// ============================================
-// COPY ROOT FILES
-// ============================================
-const rootFiles = fs.readdirSync(__dirname);
-for (const file of rootFiles) {
+const filesInRoot = fs.readdirSync(__dirname);
+const imageFiles = filesInRoot.filter(file => {
     const ext = path.extname(file).toLowerCase();
-    if (['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico', '.json', '.xml', '.txt', '.md'].includes(ext)) {
-        if (fs.statSync(path.join(__dirname, file)).isFile()) {
-            fs.copyFileSync(path.join(__dirname, file), path.join(distDir, file));
-        }
-    }
-}
+    return ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico', '.bmp', '.tiff'].includes(ext);
+});
 
-// ============================================
-// VERCEL OUTPUT
-// ============================================
+imageFiles.forEach(file => {
+    const srcPath = path.join(__dirname, file);
+    const destPath = path.join(distDir, file);
+    if (fs.statSync(srcPath).isFile()) {
+        fs.copyFileSync(srcPath, destPath);
+    }
+});
+
+const otherFiles = filesInRoot.filter(file => {
+    const ext = path.extname(file).toLowerCase();
+    return ['.json', '.xml', '.txt', '.md', '.pdf'].includes(ext) && !file.startsWith('.');
+});
+
+otherFiles.forEach(file => {
+    const srcPath = path.join(__dirname, file);
+    const destPath = path.join(distDir, file);
+    if (fs.statSync(srcPath).isFile()) {
+        fs.copyFileSync(srcPath, destPath);
+    }
+});
+
 const vercelOutputDir = path.join(__dirname, '.vercel', 'output', 'static');
 if (!fs.existsSync(vercelOutputDir)) {
     fs.mkdirSync(vercelOutputDir, { recursive: true });
 }
 
 const distFiles = fs.readdirSync(distDir);
-for (const file of distFiles) {
-    const src = path.join(distDir, file);
-    const dest = path.join(vercelOutputDir, file);
-    if (fs.statSync(src).isDirectory()) {
-        copyDirectorySync(src, dest);
+distFiles.forEach(file => {
+    const srcPath = path.join(distDir, file);
+    const destPath = path.join(vercelOutputDir, file);
+    const stat = fs.statSync(srcPath);
+    if (stat.isDirectory()) {
+        copyDirectorySync(srcPath, destPath);
     } else {
-        fs.copyFileSync(src, dest);
+        fs.copyFileSync(srcPath, destPath);
     }
-}
+});
+
+const configJson = {
+    version: 3,
+    routes: [{ src: '/(.*)', dest: '/$1' }]
+};
 
 fs.writeFileSync(
     path.join(__dirname, '.vercel', 'output', 'config.json'),
-    JSON.stringify({ version: 3, routes: [{ src: '/(.*)', dest: '/$1' }] }, null, 2)
+    JSON.stringify(configJson, null, 2)
 );
-
-console.log('[Build] ✅ Complete!');
 
 
