@@ -1,14 +1,15 @@
 // ============================================
-// SERVICE WORKER - PWA
+// SERVICE WORKER - PWA - SECURE VERSION
 // ============================================
 
-const CACHE_NAME = 'techpro-v1';
+const CACHE_NAME = 'ahmedtech-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/style.css',
   '/script.js',
-  '/config.js'
+  '/config.js',
+  '/inject-env.js'
 ];
 
 // تثبيت
@@ -35,11 +36,21 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// جلب البيانات
+// جلب البيانات - معدل للسماح بـ CDN
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // ✅ السماح بـ Font Awesome وكل الـ CDNs
+  if (url.hostname.includes('cdnjs.cloudflare.com') ||
+      url.hostname.includes('fonts.googleapis.com') ||
+      url.hostname.includes('fonts.gstatic.com')) {
+    // لا تتدخل في طلبات CDN
+    return;
+  }
+  
   // تخطي Firebase
-  if (event.request.url.includes('firebase') || 
-      event.request.url.includes('googleapis')) {
+  if (url.hostname.includes('firebase') || 
+      url.hostname.includes('googleapis.com')) {
     return;
   }
   
