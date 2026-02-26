@@ -3,41 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- 🔒 Vercel Environment Variables - PLACEHOLDERS ONLY -->
-    <!-- These will be replaced with real values during build -->
-    <meta name="NEXT_PUBLIC_FIREBASE_API_KEY" content="%NEXT_PUBLIC_FIREBASE_API_KEY%">
-    <meta name="NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN" content="%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%">
-    <meta name="NEXT_PUBLIC_FIREBASE_PROJECT_ID" content="%NEXT_PUBLIC_FIREBASE_PROJECT_ID%">
-    <meta name="NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET" content="%NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET%">
-    <meta name="NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID" content="%NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID%">
-    <meta name="NEXT_PUBLIC_FIREBASE_APP_ID" content="%NEXT_PUBLIC_FIREBASE_APP_ID%">
-    <meta name="NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID" content="%NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID%">
-    <meta name="NEXT_PUBLIC_DEFAULT_OWNER_EMAIL" content="%NEXT_PUBLIC_DEFAULT_OWNER_EMAIL%">
-    <meta name="NEXT_PUBLIC_DEFAULT_OWNER_NAME" content="%NEXT_PUBLIC_DEFAULT_OWNER_NAME%">
-    <meta name="NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD" content="%NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD%">
-    <meta name="NEXT_PUBLIC_PBKDF2_ITERATIONS" content="%NEXT_PUBLIC_PBKDF2_ITERATIONS%">
-    <meta name="NEXT_PUBLIC_PASSWORD_SALT" content="%NEXT_PUBLIC_PASSWORD_SALT%">
-    <meta name="NEXT_PUBLIC_FIREBASE_SYNC" content="%NEXT_PUBLIC_FIREBASE_SYNC%">
-    <!-- /Vercel Environment Variables -->
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
-    
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#667eea">
-    
-    <!-- Apple -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea'/%3E%3Cstop offset='100%25' style='stop-color:%23764ba2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='130' font-family='Arial' font-size='100' font-weight='bold' text-anchor='middle' fill='white'%3ET%3C/text%3E%3C/svg%3E">
-    
+    <!-- Vercel Environment Variables -->
+<meta name="NEXT_PUBLIC_FIREBASE_API_KEY" content="%NEXT_PUBLIC_FIREBASE_API_KEY%">
+<meta name="NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN" content="%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%">
+<meta name="NEXT_PUBLIC_FIREBASE_PROJECT_ID" content="%NEXT_PUBLIC_FIREBASE_PROJECT_ID%">
+<meta name="NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET" content="%NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET%">
+<meta name="NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID" content="%NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID%">
+<meta name="NEXT_PUBLIC_FIREBASE_APP_ID" content="%NEXT_PUBLIC_FIREBASE_APP_ID%">
+<meta name="NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID" content="%NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID%">
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- Theme Color -->
+<meta name="theme-color" content="#667eea">
+
+<!-- Apple -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- Apple Touch Icon (نفس أيقونة manifest) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea'/%3E%3Cstop offset='100%25' style='stop-color:%23764ba2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='130' font-family='Arial' font-size='100' font-weight='bold' text-anchor='middle' fill='white'%3ET%3C/text%3E%3C/svg%3E">
+
     <title>AHMEDTECH DZ IPTV - User Management System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link rel="stylesheet" href="style.css">
-    <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <!-- Notification Container -->
@@ -162,7 +153,9 @@
                 </div>
                 <div class="warning-text">Are you sure you want to delete this user?</div>
 
-                <div class="user-info" id="deleteUserInfo"></div>
+                <div class="user-info" id="deleteUserInfo">
+                    <!-- User info will be filled dynamically -->
+                </div>
 
                 <div class="danger-text">
                     <i class="fas fa-exclamation-circle"></i> 
@@ -191,7 +184,9 @@
                 </div>
                 <div class="warning-text">Are you sure you want to delete this MAC?</div>
 
-                <div class="mac-info" id="deleteMacInfo"></div>
+                <div class="mac-info" id="deleteMacInfo">
+                    <!-- MAC info will be filled dynamically -->
+                </div>
 
                 <div class="danger-text">
                     <i class="fas fa-exclamation-circle"></i> 
@@ -220,7 +215,9 @@
                 </div>
                 <div class="warning-text">Are you sure you want to delete this Xtream?</div>
 
-                <div class="mac-info" id="deleteXtreamInfo"></div>
+                <div class="mac-info" id="deleteXtreamInfo">
+                    <!-- Xtream info will be filled dynamically -->
+                </div>
 
                 <div class="danger-text">
                     <i class="fas fa-exclamation-circle"></i> 
@@ -448,7 +445,9 @@
                 </div>
                 <div class="warning-text">Are you sure you want to delete this IPTV App?</div>
 
-                <div class="app-info" id="deleteAppInfo"></div>
+                <div class="app-info" id="deleteAppInfo">
+                    <!-- App info will be filled dynamically -->
+                </div>
 
                 <div class="danger-text">
                     <i class="fas fa-exclamation-circle"></i> 
@@ -649,7 +648,7 @@
                 </div>
             </div>
 
-            <!-- System Settings Section -->
+                        <!-- System Settings Section -->
             <div id="system-settings-section" class="system-settings-section" style="display: none;">
                 <div class="system-settings-header">
                     <h2 class="system-settings-title">System Settings</h2>
@@ -1172,9 +1171,8 @@
         </div>
     </div>
 
-    <!-- Vercel Environment Variables Injection -->
-    <script src="inject-env.js"></script>
-    
+<!-- Vercel Environment Variables Injection -->
+<script src="inject-env.js"></script>
     <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
