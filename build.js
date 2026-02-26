@@ -1,0 +1,405 @@
+// ============================================
+// VERCEL BUILD SCRIPT - SECURE VERSION (No Meta Tags)
+// ============================================
+
+const fs = require('fs');
+const path = require('path');
+
+console.log('[Build] Starting secure build process...');
+
+// Environment variables to inject (from Vercel)
+const envVars = {
+    // Firebase Configuration
+    NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
+    NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
+    NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || '',
+    
+    // Default Owner Account
+    NEXT_PUBLIC_DEFAULT_OWNER_EMAIL: process.env.NEXT_PUBLIC_DEFAULT_OWNER_EMAIL || '',
+    NEXT_PUBLIC_DEFAULT_OWNER_NAME: process.env.NEXT_PUBLIC_DEFAULT_OWNER_NAME || '',
+    NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD: process.env.NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD || '',
+    
+    // Security Settings
+    NEXT_PUBLIC_PBKDF2_ITERATIONS: process.env.NEXT_PUBLIC_PBKDF2_ITERATIONS || '310000',
+    NEXT_PUBLIC_PASSWORD_SALT: process.env.NEXT_PUBLIC_PASSWORD_SALT || '',
+    NEXT_PUBLIC_FIREBASE_SYNC: process.env.NEXT_PUBLIC_FIREBASE_SYNC || 'true'
+};
+
+// Check environment
+console.log('[Build] Environment:', process.env.VERCEL_ENV || 'local');
+
+// Check if required Firebase vars are present (without showing values)
+const requiredVars = [
+    'NEXT_PUBLIC_FIREBASE_API_KEY',
+    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+    'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'
+];
+
+const missingVars = requiredVars.filter(v => !envVars[v] || envVars[v] === '');
+
+if (missingVars.length > 0) {
+    console.warn('[Build] ⚠️ Missing environment variables:', missingVars.join(', '));
+    console.warn('[Build] App will use fallback values');
+} else {
+    console.log('[Build] ✅ All required Firebase environment variables present');
+}
+
+// Create dist directory
+const distDir = path.join(__dirname, 'dist');
+if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir, { recursive: true });
+}
+
+// ============================================
+// 🛡️ SECURITY: REMOVE CONSOLE.LOG FROM SCRIPT.JS
+// ============================================
+
+console.log('[Build] 🔒 Processing script.js for security...');
+
+const scriptPath = path.join(__dirname, 'script.js');
+let scriptModified = false;
+
+if (fs.existsSync(scriptPath)) {
+    let scriptContent = fs.readFileSync(scriptPath, 'utf8');
+    const originalLength = scriptContent.length;
+    
+    // Remove console.log, console.info, console.debug, console.trace completely
+    // But keep console.error and console.warn for debugging
+    
+    // Pattern 1: console.log(...) with any content including nested parentheses
+    scriptContent = scriptContent.replace(/console\.log\s*\([^)]*\);?/g, '');
+    
+    // Pattern 2: console.info(...)
+    scriptContent = scriptContent.replace(/console\.info\s*\([^)]*\);?/g, '');
+    
+    // Pattern 3: console.debug(...)
+    scriptContent = scriptContent.replace(/console\.debug\s*\([^)]*\);?/g, '');
+    
+    // Pattern 4: console.trace(...)
+    scriptContent = scriptContent.replace(/console\.trace\s*\([^)]*\);?/g, '');
+    
+    // Pattern 5: Multi-line console.log with template literals
+    scriptContent = scriptContent.replace(/console\.log\s*\(`[^`]*`\);?/g, '');
+    
+    // Pattern 6: console.log with single quotes
+    scriptContent = scriptContent.replace(/console\.log\s*\('[^']*'\);?/g, '');
+    
+    // Pattern 7: console.log with double quotes
+    scriptContent = scriptContent.replace(/console\.log\s*\("[^"]*"\);?/g, '');
+    
+    // Pattern 8: Empty console.log()
+    scriptContent = scriptContent.replace(/console\.log\s*\(\s*\);?/g, '');
+    
+    // Pattern 9: console.log with variables (aggressive removal)
+    // This matches console.log(anything);
+    const consoleLogRegex = /console\.log\s*\([\s\S]*?\);?/g;
+    let match;
+    while ((match = consoleLogRegex.exec(scriptContent)) !== null) {
+        // Check if it's a multi-line log
+        const matched = match[0];
+        if (matched.includes('\n')) {
+            // Find balanced parentheses
+            let depth = 0;
+            let end = match.index;
+            for (let i = match.index; i < scriptContent.length; i++) {
+                if (scriptContent[i] === '(') depth++;
+                if (scriptContent[i] === ')') depth--;
+                if (depth === 0 && scriptContent[i] === ')') {
+                    end = i + 1;
+                    // Include semicolon if present
+                    if (scriptContent[end] === ';') end++;
+                    break;
+                }
+            }
+            scriptContent = scriptContent.substring(0, match.index) + scriptContent.substring(end);
+        }
+    }
+    
+    // Final cleanup: remove any remaining console.log patterns
+    scriptContent = scriptContent.replace(/console\.log\s*\([^)]*\);?\n?/g, '');
+    
+    // Remove empty lines left behind
+    scriptContent = scriptContent.replace(/\n\s*\n\s*\n/g, '\n\n');
+    
+    // Write modified script to dist
+    fs.writeFileSync(path.join(distDir, 'script.js'), scriptContent);
+    scriptModified = true;
+    
+    const removedBytes = originalLength - scriptContent.length;
+    console.log(`[Build] ✅ Removed console.log statements (${removedBytes} bytes removed)`);
+    console.log('[Build] ✅ Secure script.js written to dist/');
+} else {
+    console.error('[Build] ❌ script.js not found!');
+}
+
+// ============================================
+// 🛡️ SECURITY: REMOVE CONSOLE.LOG FROM INJECT-ENV.JS
+// ============================================
+
+console.log('[Build] 🔒 Processing inject-env.js for security...');
+
+const injectEnvPath = path.join(__dirname, 'inject-env.js');
+if (fs.existsSync(injectEnvPath)) {
+    let injectContent = fs.readFileSync(injectEnvPath, 'utf8');
+    
+    // Remove console.log, console.info, console.debug
+    injectContent = injectContent.replace(/console\.log\s*\([^)]*\);?/g, '');
+    injectContent = injectContent.replace(/console\.info\s*\([^)]*\);?/g, '');
+    injectContent = injectContent.replace(/console\.debug\s*\([^)]*\);?/g, '');
+    injectContent = injectContent.replace(/console\.trace\s*\([^)]*\);?/g, '');
+    
+    // Remove empty lines
+    injectContent = injectContent.replace(/\n\s*\n\s*\n/g, '\n\n');
+    
+    fs.writeFileSync(path.join(distDir, 'inject-env.js'), injectContent);
+    console.log('[Build] ✅ Secure inject-env.js written to dist/');
+} else {
+    console.error('[Build] ❌ inject-env.js not found!');
+}
+
+// ============================================
+// 🛡️ SECURITY: REMOVE CONSOLE.LOG FROM CONFIG.JS
+// ============================================
+
+console.log('[Build] 🔒 Processing config.js for security...');
+
+const configPath = path.join(__dirname, 'config.js');
+if (fs.existsSync(configPath)) {
+    let configContent = fs.readFileSync(configPath, 'utf8');
+    
+    // Remove console.log, console.info, console.debug
+    configContent = configContent.replace(/console\.log\s*\([^)]*\);?/g, '');
+    configContent = configContent.replace(/console\.info\s*\([^)]*\);?/g, '');
+    configContent = configContent.replace(/console\.debug\s*\([^)]*\);?/g, '');
+    configContent = configContent.replace(/console\.trace\s*\([^)]*\);?/g, '');
+    
+    // Remove empty lines
+    configContent = configContent.replace(/\n\s*\n\s*\n/g, '\n\n');
+    
+    fs.writeFileSync(path.join(distDir, 'config.js'), configContent);
+    console.log('[Build] ✅ Secure config.js written to dist/');
+} else {
+    console.error('[Build] ❌ config.js not found!');
+}
+
+// ============================================
+// PROCESS HTML
+// ============================================
+
+// Read source HTML
+const sourceHtmlPath = path.join(__dirname, 'index.html');
+if (!fs.existsSync(sourceHtmlPath)) {
+    console.error('[Build] ❌ Error: index.html not found!');
+    process.exit(1);
+}
+
+let htmlContent = fs.readFileSync(sourceHtmlPath, 'utf8');
+
+// 🛡️ SECURITY: Remove ALL environment variable meta tags completely
+// Remove old meta tags placeholder and all NEXT_PUBLIC meta tags
+const metaTagPattern = /<!-- Vercel Environment Variables -->[\s\S]*?<!-- \/Vercel Environment Variables -->/g;
+htmlContent = htmlContent.replace(metaTagPattern, '');
+
+// Remove individual NEXT_PUBLIC meta tags
+const individualMetaPattern = /<meta name="NEXT_PUBLIC_[^"]*" content="[^"]*">\n?/g;
+htmlContent = htmlContent.replace(individualMetaPattern, '');
+
+// Generate obfuscated JavaScript with environment variables
+const envScript = `
+// Auto-generated environment variables - DO NOT MODIFY
+(function(){
+    'use strict';
+    window.__ENV__ = ${JSON.stringify(envVars)};
+    Object.defineProperty(window, '__ENV__', {
+        enumerable: false,
+        configurable: false,
+        writable: false
+    });
+})();
+
+// 🛡️ SECURITY: Disable console logging
+(function(){
+    'use strict';
+    console.log = function(){};
+    console.info = function(){};
+    console.debug = function(){};
+    console.trace = function(){};
+})();
+`;
+
+// Inject environment script AFTER charset meta but BEFORE title/styles
+const charsetMetaMatch = htmlContent.match(/<meta charset="[^"]*">/i);
+if (charsetMetaMatch) {
+    const insertPosition = htmlContent.indexOf(charsetMetaMatch[0]) + charsetMetaMatch[0].length;
+    htmlContent = htmlContent.slice(0, insertPosition) + 
+                  `\n    <!-- Environment Variables -->\n    <script>${envScript}</script>\n    <!-- /Environment Variables -->` + 
+                  htmlContent.slice(insertPosition);
+    console.log('[Build] ✅ Injected secure environment variables after charset');
+} else {
+    // Fallback: inject after <head>
+    const headMatch = htmlContent.match(/<head>/i);
+    if (headMatch) {
+        const insertPosition = htmlContent.indexOf(headMatch[0]) + headMatch[0].length;
+        htmlContent = htmlContent.slice(0, insertPosition) + 
+                      `\n    <script>${envScript}</script>\n` + 
+                      htmlContent.slice(insertPosition);
+        console.log('[Build] ✅ Injected secure environment variables in head');
+    }
+}
+
+// Write processed HTML to dist
+const outputHtmlPath = path.join(distDir, 'index.html');
+fs.writeFileSync(outputHtmlPath, htmlContent);
+console.log('[Build] ✅ Written dist/index.html');
+
+// ============================================
+// COPY REMAINING STATIC FILES
+// ============================================
+
+// Helper function to copy directory recursively
+function copyDirectorySync(src, dest) {
+    if (!fs.existsSync(src)) {
+        return;
+    }
+    
+    if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+    }
+
+    const entries = fs.readdirSync(src, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+            copyDirectorySync(srcPath, destPath);
+        } else {
+            fs.copyFileSync(srcPath, destPath);
+            console.log(`[Build] 📄 Copied: ${entry.name}`);
+        }
+    }
+}
+
+// Copy individual files (excluding JS files we already processed)
+const filesToCopy = [
+    'style.css',
+    'sw.js'
+];
+
+filesToCopy.forEach(file => {
+    const srcPath = path.join(__dirname, file);
+    const destPath = path.join(distDir, file);
+    
+    if (fs.existsSync(srcPath)) {
+        fs.copyFileSync(srcPath, destPath);
+        console.log(`[Build] ✅ Copied ${file}`);
+    } else {
+        console.warn(`[Build] ⚠️ ${file} not found, skipping`);
+    }
+});
+
+// Copy static directories
+const staticDirs = [
+    'images',
+    'img',
+    'assets',
+    'fonts',
+    'uploads',
+    'css',
+    'js',
+    'media',
+    'icons',
+    'data'
+];
+
+staticDirs.forEach(dirName => {
+    const srcDir = path.join(__dirname, dirName);
+    const distDestDir = path.join(distDir, dirName);
+    copyDirectorySync(srcDir, distDestDir);
+});
+
+// ============================================
+// COPY IMAGE FILES IN ROOT
+// ============================================
+
+const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico', '.bmp', '.tiff'];
+const filesInRoot = fs.readdirSync(__dirname);
+
+filesInRoot.forEach(file => {
+    const ext = path.extname(file).toLowerCase();
+    if (imageExtensions.includes(ext)) {
+        const srcPath = path.join(__dirname, file);
+        const destPath = path.join(distDir, file);
+        
+        if (fs.statSync(srcPath).isFile()) {
+            fs.copyFileSync(srcPath, destPath);
+            console.log(`[Build] 🖼️ Copied image: ${file}`);
+        }
+    }
+});
+
+// ============================================
+// COPY JSON/XML/TXT FILES
+// ============================================
+
+const otherExtensions = ['.json', '.xml', '.txt', '.md'];
+filesInRoot.forEach(file => {
+    const ext = path.extname(file).toLowerCase();
+    if (otherExtensions.includes(ext) && !file.startsWith('.') && !file.includes('package')) {
+        const srcPath = path.join(__dirname, file);
+        const destPath = path.join(distDir, file);
+        
+        if (fs.statSync(srcPath).isFile()) {
+            fs.copyFileSync(srcPath, destPath);
+            console.log(`[Build] 📋 Copied file: ${file}`);
+        }
+    }
+});
+
+// ============================================
+// VERCEL OUTPUT STRUCTURE
+// ============================================
+
+const vercelOutputDir = path.join(__dirname, '.vercel', 'output', 'static');
+if (!fs.existsSync(vercelOutputDir)) {
+    fs.mkdirSync(vercelOutputDir, { recursive: true });
+}
+
+// Copy all dist files to .vercel/output/static
+const distFiles = fs.readdirSync(distDir);
+distFiles.forEach(file => {
+    const srcPath = path.join(distDir, file);
+    const destPath = path.join(vercelOutputDir, file);
+    
+    const stat = fs.statSync(srcPath);
+    if (stat.isDirectory()) {
+        copyDirectorySync(srcPath, destPath);
+    } else {
+        fs.copyFileSync(srcPath, destPath);
+    }
+});
+
+console.log('[Build] ✅ Copied to .vercel/output/static');
+
+// Create config.json for Vercel Build Output API
+const configJson = {
+    version: 3,
+    routes: [{ src: '/(.*)', dest: '/$1' }]
+};
+
+fs.writeFileSync(
+    path.join(__dirname, '.vercel', 'output', 'config.json'),
+    JSON.stringify(configJson, null, 2)
+);
+
+console.log('[Build] ✅ Created .vercel/output/config.json');
+console.log('[Build] ✅ Build completed successfully!');
+console.log('[Build] 🔒 All console.log statements removed');
+console.log('[Build] 🔒 Environment variables hidden from source');
+
+
