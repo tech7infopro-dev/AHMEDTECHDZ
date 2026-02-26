@@ -32,7 +32,7 @@
       "has": [
         {
           "type": "host",
-          "value": "techpro-iptv.vercel.app"
+          "value": "t3chpro-iptv.vercel.app"
         },
         {
           "type": "header",
@@ -45,5 +45,4 @@
     }
   ]
 }
-
 

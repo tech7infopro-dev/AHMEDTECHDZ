@@ -1,6 +1,6 @@
 {
-  "name": "TECHPRO IPTV",
-  "short_name": "TECHPRO",
+  "name": "T3CHPRO IPTV",
+  "short_name": "T3CHPRO",
   "description": "نظام إدارة IPTV متكامل مع مزامنة فورية",
   "start_url": "/",
   "display": "standalone",
@@ -60,13 +60,12 @@
   ],
   "screenshots": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%23f8f9fa' width='1280' height='720'/%3E%3Ctext x='640' y='360' font-family='Arial' font-size='60' text-anchor='middle' fill='%23667eea'%3ETECHPRO IPTV Dashboard%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%23f8f9fa' width='1280' height='720'/%3E%3Ctext x='640' y='360' font-family='Arial' font-size='60' text-anchor='middle' fill='%23667eea'%3ET3CHPRO IPTV Dashboard%3C/text%3E%3C/svg%3E",
       "sizes": "1280x720",
       "type": "image/svg+xml",
       "form_factor": "wide"
     }
   ]
 }
-
 
 
