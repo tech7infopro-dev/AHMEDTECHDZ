@@ -40,7 +40,7 @@
           "value": "http"
         }
       ],
-      "destination": "https://ahmedtechdz.vercel.app/$1",
+      "destination": "https://t3chpro-iptv.vercel.app/$1",
       "permanent": true
     }
   ]

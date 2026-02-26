@@ -1,20 +1,41 @@
 // ============================================
-// CONFIGURATION FILE - SECURE VERSION
-// جلب الإعدادات من API بدلاً من meta tags
+// CONFIGURATION FILE - Security Settings & Firebase
+// Reads from Environment Variables (Vercel) via window.ENV
+// ⚠️ NEVER put real secrets here - use Vercel Environment Variables!
 // ============================================
+
+// Helper to get environment variable with fallback
+const getEnv = (key, defaultValue = null) => {
+    // Priority 1: window.ENV (set by build.js with obfuscated values)
+    if (typeof window !== 'undefined' && window.ENV && window.ENV[key]) {
+        return window.ENV[key];
+    }
+
+    // Priority 2: window.process.env (for compatibility)
+    if (typeof window !== 'undefined' && window.process && window.process.env && window.process.env[key]) {
+        return window.process.env[key];
+    }
+
+    // Priority 3: Node.js process.env (during build)
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+        return process.env[key];
+    }
+
+    return defaultValue;
+};
 
 // ============================================
 // DEFAULT OWNER ACCOUNT - EMAIL BASED
-// ⚠️ IMPORTANT: Change these before deployment!
+// ⚠️ IMPORTANT: Set these in Vercel Environment Variables!
 // ============================================
-
-// هذه القيم ستُحذف من هنا وتوضع في Vercel Environment Variables فقط
-// ويتم جلبها عبر API
+const DEFAULT_OWNER_EMAIL = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_EMAIL', 'admin@example.com');
+const DEFAULT_OWNER_NAME = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_NAME', 'ADMIN');
+const DEFAULT_OWNER_PASSWORD = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_PASSWORD', 'CHANGE_THIS_PASSWORD');
 
 const DEFAULT_OWNER = {
-    id: 'ahmedtech',
-    name: 'AHMEDTECH',
-    email: 'owner@example.com',  // سيتم تحديثه من API
+    id: DEFAULT_OWNER_NAME,
+    name: DEFAULT_OWNER_NAME,
+    email: DEFAULT_OWNER_EMAIL,
     password: null,
     role: "owner",
     created: new Date().toISOString(),
@@ -23,21 +44,20 @@ const DEFAULT_OWNER = {
     firebaseUid: null
 };
 
-// ============================================
-// CONFIG OBJECT - سيتم ملؤه لاحقاً من API
-// ============================================
 const CONFIG = {
-    // Firebase Configuration - سيتم ملؤه من API
+    // ============================================
+    // FIREBASE CONFIGURATION
+    // ⚠️ IMPORTANT: Set these in Vercel Environment Variables!
+    // ============================================
     FIREBASE: {
-        API_KEY: null,  // يُملأ من API
-        AUTH_DOMAIN: null,
-        PROJECT_ID: null,
-        STORAGE_BUCKET: null,
-        MESSAGING_SENDER_ID: null,
-        APP_ID: null,
-        MEASUREMENT_ID: null,
+        API_KEY: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY', 'YOUR_FIREBASE_API_KEY_HERE'),
+        AUTH_DOMAIN: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', 'your-project.firebaseapp.com'),
+        PROJECT_ID: getEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'your-project-id'),
+        STORAGE_BUCKET: getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', 'your-project.appspot.com'),
+        MESSAGING_SENDER_ID: getEnv('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', '123456789'),
+        APP_ID: getEnv('NEXT_PUBLIC_FIREBASE_APP_ID', '1:123456789:web:abcdef123456'),
+        MEASUREMENT_ID: getEnv('NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID', 'G-XXXXXXXXXX'),
 
-        // Firestore Collections
         COLLECTIONS: {
             USERS: 'users',
             FREE_MACS: 'free_macs',
@@ -49,7 +69,6 @@ const CONFIG = {
             SYSTEM_CONFIG: 'system_config'
         },
 
-        // Sync Settings
         SYNC: {
             ENABLED: true,
             AUTO_SYNC: true,
@@ -64,19 +83,18 @@ const CONFIG = {
     // ============================================
     SECURITY: {
         PBKDF2: {
-            ITERATIONS: 310000,
+            ITERATIONS: parseInt(getEnv('NEXT_PUBLIC_PBKDF2_ITERATIONS', '310000')),
             KEY_LENGTH: 256,
             HASH: 'SHA-256',
             SALT_LENGTH: 32,
             LEGACY_ITERATIONS: 100000,
             AUTO_UPGRADE: true,
-            // ⚠️ Change this salt in production!
-            SALT: 'CHANGE_THIS_SALT_TO_RANDOM_STRING_32_CHARS_MIN'
+            SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', 'CHANGE_THIS_SALT_TO_RANDOM_STRING_32_CHARS_MIN')
         },
 
         SESSION: {
-            SECRET: 'CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET_KEY_MIN_64_CHARS',
-            TIMEOUT: 3600000,
+            SECRET: getEnv('SESSION_SECRET', 'CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET_KEY_MIN_64_CHARS'),
+            TIMEOUT: parseInt(getEnv('SESSION_TIMEOUT', '3600000')),
             RENEWAL_THRESHOLD: 300000,
             ABSOLUTE_TIMEOUT: 28800000,
             IDLE_TIMEOUT: 1800000,
@@ -91,9 +109,9 @@ const CONFIG = {
         },
 
         RATE_LIMIT: {
-            MAX_ATTEMPTS: 5,
-            WINDOW_MS: 900000,
-            BLOCK_DURATION_MS: 1800000
+            MAX_ATTEMPTS: parseInt(getEnv('MAX_LOGIN_ATTEMPTS', '5')),
+            WINDOW_MS: parseInt(getEnv('RATE_LIMIT_WINDOW', '900000')),
+            BLOCK_DURATION_MS: parseInt(getEnv('LOCKOUT_DURATION', '1800000'))
         },
 
         SMART_DELAY: {
@@ -146,20 +164,18 @@ const CONFIG = {
         },
 
         ENCRYPTION: {
-            MASTER_KEY: 'CHANGE_THIS_TO_A_STRONG_RANDOM_ENCRYPTION_KEY_64_CHARS',
-            AUTO_ROTATE: false,
-            ROTATION_INTERVAL_DAYS: 30
+            MASTER_KEY: getEnv('ENCRYPTION_KEY', 'CHANGE_THIS_TO_A_STRONG_RANDOM_ENCRYPTION_KEY_64_CHARS'),
+            AUTO_ROTATE: getEnv('AUTO_ROTATE_KEYS', 'false') === 'true',
+            ROTATION_INTERVAL_DAYS: parseInt(getEnv('KEY_ROTATION_INTERVAL', '30'))
         }
     },
 
-    // ============================================
-    // DEFAULT ACCOUNTS
-    // ============================================
     DEFAULT_USERS: [DEFAULT_OWNER],
 
-    // ============================================
-    // PERMISSIONS MATRIX
-    // ============================================
+    DEFAULT_PASSWORDS: {
+        [DEFAULT_OWNER_EMAIL]: DEFAULT_OWNER_PASSWORD
+    },
+
     PERMISSIONS: {
         owner: [
             { id: 'view_all_users', name: 'View All Users', allowed: true },
@@ -224,9 +240,6 @@ const CONFIG = {
         ]
     },
 
-    // ============================================
-    // RESOURCE PERMISSIONS
-    // ============================================
     MAC_PERMISSIONS: {
         owner: { canView: true, canAdd: true, canEdit: true, canDelete: true },
         admin: { canView: true, canAdd: true, canEdit: true, canDelete: true },
@@ -251,9 +264,6 @@ const CONFIG = {
         user: { canView: true, canAdd: false, canEdit: false, canDelete: false }
     },
 
-    // ============================================
-    // STORAGE KEYS
-    // ============================================
     STORAGE_KEYS: {
         USERS: 'iptv_users_v2',
         CURRENT_USER: 'iptv_current_user_v2',
@@ -284,32 +294,26 @@ const CONFIG = {
         OFFLINE_CHANGES: 'iptv_offline_changes'
     },
 
-    // ============================================
-    // SYSTEM SETTINGS
-    // ============================================
     SYSTEM: {
         CHECK_EXPIRY_INTERVAL: 3600000,
         MIN_PASSWORD_LENGTH: 8,
         DEFAULT_ROLE: 'user',
         DATE_FORMAT: 'en-US',
-        MAX_LOGIN_ATTEMPTS: 5,
-        LOCKOUT_DURATION: 1800000,
+        MAX_LOGIN_ATTEMPTS: parseInt(getEnv('MAX_LOGIN_ATTEMPTS', '5')),
+        LOCKOUT_DURATION: parseInt(getEnv('LOCKOUT_DURATION', '1800000')),
         PASSWORD_EXPIRY_WARNING_DAYS: 7,
         SESSION_WARNING_BEFORE_TIMEOUT: 300000,
         AUTO_LOGOUT_ON_CLOSE: false,
         SECURE_CONTEXT_REQUIRED: true,
-        DEBUG_MODE: false,
-        APP_NAME: 'IPTV Management System',
-        APP_URL: 'https://your-domain.vercel.app',
-        SUPPORT_EMAIL: 'support@yourdomain.com',
-        ENABLE_REGISTRATION: true,
-        ENABLE_PASSWORD_RESET: true,
-        ENABLE_FIREBASE_SYNC: true
+        DEBUG_MODE: getEnv('DEBUG_MODE', 'false') === 'true',
+        APP_NAME: getEnv('APP_NAME', 'IPTV Management System'),
+        APP_URL: getEnv('APP_URL', 'https://your-domain.vercel.app'),
+        SUPPORT_EMAIL: getEnv('SUPPORT_EMAIL', 'support@yourdomain.com'),
+        ENABLE_REGISTRATION: getEnv('ENABLE_REGISTRATION', 'true') === 'true',
+        ENABLE_PASSWORD_RESET: getEnv('ENABLE_PASSWORD_RESET', 'true') === 'true',
+        ENABLE_FIREBASE_SYNC: getEnv('ENABLE_FIREBASE_SYNC', 'true') === 'true'
     },
 
-    // ============================================
-    // SECURITY HEADERS
-    // ============================================
     SECURITY_HEADERS: {
         'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://*.firebaseio.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;",
         'X-Frame-Options': 'DENY',
@@ -325,66 +329,5 @@ const CONFIG = {
     }
 };
 
-// ============================================
-// 🔐 دالة جلب الإعدادات الأمنية من API
-// ============================================
-
-/**
- * جلب إعدادات Firebase من API (Server-side)
- * هذه الدالة تُستدعى قبل تهيئة Firebase
- */
-async function loadSecureConfig() {
-    try {
-        console.log('[Config] Loading secure configuration from API...');
-        
-        // جلب الإعدادات من API
-        const response = await fetch('/api/config');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const firebaseConfig = await response.json();
-        
-        // التحقق من صحة الإعدادات
-        if (!firebaseConfig.apiKey || firebaseConfig.apiKey === '') {
-            console.error('[Config] ❌ API returned empty config');
-            return false;
-        }
-        
-        // ملء CONFIG.FIREBASE بالقيم المحملة
-        CONFIG.FIREBASE.API_KEY = firebaseConfig.apiKey;
-        CONFIG.FIREBASE.AUTH_DOMAIN = firebaseConfig.authDomain;
-        CONFIG.FIREBASE.PROJECT_ID = firebaseConfig.projectId;
-        CONFIG.FIREBASE.STORAGE_BUCKET = firebaseConfig.storageBucket;
-        CONFIG.FIREBASE.MESSAGING_SENDER_ID = firebaseConfig.messagingSenderId;
-        CONFIG.FIREBASE.APP_ID = firebaseConfig.appId;
-        CONFIG.FIREBASE.MEASUREMENT_ID = firebaseConfig.measurementId;
-        
-        console.log('[Config] ✅ Secure configuration loaded successfully');
-        console.log('[Config] Project ID:', CONFIG.FIREBASE.PROJECT_ID);
-        
-        return true;
-        
-    } catch (error) {
-        console.error('[Config] ❌ Failed to load secure config:', error);
-        console.error('[Config] Error details:', error.message);
-        
-        // في حالة الفشل، حاول استخدام القيم الاحتياطية (للتطوير فقط)
-        if (window.location.hostname === 'localhost') {
-            console.warn('[Config] Using fallback values for local development');
-            // يمكنك وضع قيم وهمية هنا للتطوير المحلي فقط
-            return false;
-        }
-        
-        return false;
-    }
-}
-
-// تصدير الدالة للاستخدام في script.js
-window.loadSecureConfig = loadSecureConfig;
-
 // Prevent modification
 Object.freeze(CONFIG);
-
-
