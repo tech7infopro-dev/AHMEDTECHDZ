@@ -10,7 +10,6 @@
 </p>
 
 🔥First of all, the file must be adjusted config.js🔥
-
 🔥أولاً، يجب تعديل ملف config.js🔥
 
 <p align="center">
