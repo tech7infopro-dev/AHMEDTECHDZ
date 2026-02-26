@@ -333,15 +333,15 @@ const CONFIG = {
     },
 
     // ============================================
-    // SECURITY HEADERS - UPDATED FOR FONT AWESOME CDN
+    // SECURITY HEADERS - UPDATED FOR FIREBASE, FONT AWESOME & ALL CDNs
     // ============================================
     SECURITY_HEADERS: {
         'Content-Security-Policy': "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://*.firebaseio.com https://*.googleapis.com; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://*.firebaseio.com https://*.googleapis.com https://www.gstatic.com https://apis.google.com; " +
             "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
             "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; " +
             "img-src 'self' data: blob: https:; " +
-            "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://cdnjs.cloudflare.com; " +
+            "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://cdnjs.cloudflare.com https://www.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; " +
             "frame-ancestors 'none'; " +
             "base-uri 'self'; " +
             "form-action 'self'; " +
