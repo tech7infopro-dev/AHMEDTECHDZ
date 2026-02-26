@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Vercel Environment Variables -->
+<meta name="NEXT_PUBLIC_FIREBASE_API_KEY" content="%NEXT_PUBLIC_FIREBASE_API_KEY%">
+<meta name="NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN" content="%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%">
+<meta name="NEXT_PUBLIC_FIREBASE_PROJECT_ID" content="%NEXT_PUBLIC_FIREBASE_PROJECT_ID%">
+<meta name="NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET" content="%NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET%">
+<meta name="NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID" content="%NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID%">
+<meta name="NEXT_PUBLIC_FIREBASE_APP_ID" content="%NEXT_PUBLIC_FIREBASE_APP_ID%">
+<meta name="NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID" content="%NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID%">
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- Theme Color -->
+<meta name="theme-color" content="#667eea">
+
+<!-- Apple -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- Apple Touch Icon (نفس أيقونة manifest) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea'/%3E%3Cstop offset='100%25' style='stop-color:%23764ba2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='130' font-family='Arial' font-size='100' font-weight='bold' text-anchor='middle' fill='white'%3ET%3C/text%3E%3C/svg%3E">
+
+    <title>AHMEDTECH DZ IPTV - User Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+<base target="_blank">
+</head>
+<body>
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- Modal Edit User -->
+    <div class="modal-overlay" id="editUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Edit User</h3>
+                <div class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="edit-user-name" placeholder="Full Name" autocomplete="name">
+                </div>
+                <div class="input-group">
+                    <input type="email" id="edit-user-email" placeholder="Email" autocomplete="email">
+                </div>
+                <div class="input-group password-input">
+                    <input type="password" id="edit-user-password" placeholder="Password (Leave empty to keep current)">
+                    <div class="password-toggle" data-target="edit-user-password">
+                        <i class="far fa-eye"></i>
+                    </div>
+                </div>
+
+                <div class="role-selector" id="edit-role-selector">
+                    <div class="role-option user selected" data-role="user">
+                        <i class="fas fa-user role-icon"></i>
+                        User
+                    </div>
+                    <div class="role-option admin" data-role="admin">
+                        <i class="fas fa-user-shield role-icon"></i>
+                        Admin
+                    </div>
+                    <div class="role-option owner" data-role="owner">
+                        <i class="fas fa-crown role-icon"></i>
+                        Owner
+                    </div>
+                </div>
+
+                <div class="instruction-text">
+                    Note: Changing user role may affect their permissions
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="modalCancel">Cancel</button>
+                <button class="modal-btn save" id="modalSave">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add User -->
+    <div class="modal-overlay" id="addUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New User</h3>
+                <div class="modal-close" id="addModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="add-user-name" placeholder="Full Name" autocomplete="name">
+                </div>
+                <div class="input-group">
+                    <input type="email" id="add-user-email" placeholder="Email" autocomplete="email">
+                </div>
+                <div class="input-group password-input">
+                    <input type="password" id="add-user-password" placeholder="Password">
+                    <div class="password-toggle" data-target="add-user-password">
+                        <i class="far fa-eye"></i>
+                    </div>
+                </div>
+                <div class="input-group password-input">
+                    <input type="password" id="add-user-confirm" placeholder="Confirm Password">
+                    <div class="password-toggle" data-target="add-user-confirm">
+                        <i class="far fa-eye"></i>
+                    </div>
+                </div>
+
+                <div class="role-selector" id="add-role-selector">
+                    <div class="role-option user selected" data-role="user">
+                        <i class="fas fa-user role-icon"></i>
+                        User
+                    </div>
+                    <div class="role-option admin" data-role="admin">
+                        <i class="fas fa-user-shield role-icon"></i>
+                        Admin
+                    </div>
+                    <div class="role-option owner" data-role="owner">
+                        <i class="fas fa-crown role-icon"></i>
+                        Owner
+                    </div>
+                </div>
+
+                <div class="instruction-text">
+                    Select appropriate role for the new user
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="addModalCancel">Cancel</button>
+                <button class="modal-btn save" id="addModalSave">Create User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Delete Confirmation -->
+    <div class="modal-overlay delete-modal" id="deleteUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Deletion</h3>
+                <div class="modal-close" id="deleteModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="delete-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="warning-text">Are you sure you want to delete this user?</div>
+
+                <div class="user-info" id="deleteUserInfo">
+                    <!-- User info will be filled dynamically -->
+                </div>
+
+                <div class="danger-text">
+                    <i class="fas fa-exclamation-circle"></i> 
+                    This action cannot be undone. All user data will be permanently deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="deleteModalCancel">Cancel</button>
+                <button class="modal-btn delete" id="deleteModalConfirm">Delete User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Delete MAC Confirmation -->
+    <div class="modal-overlay delete-mac-modal" id="deleteMacModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm MAC Deletion</h3>
+                <div class="modal-close" id="deleteMacModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="delete-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="warning-text">Are you sure you want to delete this MAC?</div>
+
+                <div class="mac-info" id="deleteMacInfo">
+                    <!-- MAC info will be filled dynamically -->
+                </div>
+
+                <div class="danger-text">
+                    <i class="fas fa-exclamation-circle"></i> 
+                    This action cannot be undone. MAC data will be permanently deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="deleteMacModalCancel">Cancel</button>
+                <button class="modal-btn delete" id="deleteMacModalConfirm">Delete MAC</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Delete Xtream Confirmation -->
+    <div class="modal-overlay delete-xtream-modal" id="deleteXtreamModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Xtream Deletion</h3>
+                <div class="modal-close" id="deleteXtreamModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="delete-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="warning-text">Are you sure you want to delete this Xtream?</div>
+
+                <div class="mac-info" id="deleteXtreamInfo">
+                    <!-- Xtream info will be filled dynamically -->
+                </div>
+
+                <div class="danger-text">
+                    <i class="fas fa-exclamation-circle"></i> 
+                    This action cannot be undone. Xtream data will be permanently deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="deleteXtreamModalCancel">Cancel</button>
+                <button class="modal-btn delete" id="deleteXtreamModalConfirm">Delete Xtream</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add Free MAC -->
+    <div class="modal-overlay" id="addMacModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Free MAC</h3>
+                <div class="modal-close" id="addMacModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="add-mac-url" placeholder="URL (e.g., http://freeserver.tv:80/c/)" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="add-mac-address" placeholder="MAC Address (e.g., 00:1A:79:00:00:00)" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <input type="date" id="add-mac-expiry" placeholder="Expiry Date">
+                </div>
+
+                <div class="instruction-text">
+                    Note: MAC will be automatically deleted when expired
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="addMacModalCancel">Cancel</button>
+                <button class="modal-btn save" id="addMacModalSave">Add MAC</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Free MAC -->
+    <div class="modal-overlay" id="editMacModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Free MAC</h3>
+                <div class="modal-close" id="editMacModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="edit-mac-url" placeholder="URL (e.g., http://freeserver.tv:80/c/)" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="edit-mac-address" placeholder="MAC Address (e.g., 00:1A:79:00:00:00)" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <input type="date" id="edit-mac-expiry" placeholder="Expiry Date">
+                </div>
+
+                <div class="instruction-text">
+                    Note: MAC will be automatically deleted when expired
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="editMacModalCancel">Cancel</button>
+                <button class="modal-btn save" id="editMacModalSave">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add Free Xtream -->
+    <div class="modal-overlay" id="addXtreamModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Free Xtream</h3>
+                <div class="modal-close" id="addXtreamModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="add-xtream-url" placeholder="URL (e.g., http://freeserver.tv:80)" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="add-xtream-username" placeholder="Username" autocomplete="off">
+                </div>
+                <div class="input-group password-input">
+                    <input type="password" id="add-xtream-password" placeholder="Password" autocomplete="off">
+                    <div class="password-toggle" data-target="add-xtream-password">
+                        <i class="far fa-eye"></i>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="date" id="add-xtream-expiry" placeholder="Expiry Date">
+                </div>
+
+                <div class="instruction-text">
+                    Note: Xtream will be automatically deleted when expired
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="addXtreamModalCancel">Cancel</button>
+                <button class="modal-btn save" id="addXtreamModalSave">Add Xtream</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Free Xtream -->
+    <div class="modal-overlay" id="editXtreamModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Free Xtream</h3>
+                <div class="modal-close" id="editXtreamModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="edit-xtream-url" placeholder="URL (e.g., http://freeserver.tv:80)" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="edit-xtream-username" placeholder="Username" autocomplete="off">
+                </div>
+                <div class="input-group password-input">
+                    <input type="password" id="edit-xtream-password" placeholder="Password (Leave empty to keep current)">
+                    <div class="password-toggle" data-target="edit-xtream-password">
+                        <i class="far fa-eye"></i>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="date" id="edit-xtream-expiry" placeholder="Expiry Date">
+                </div>
+
+                <div class="instruction-text">
+                    Note: Xtream will be automatically deleted when expired
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="editXtreamModalCancel">Cancel</button>
+                <button class="modal-btn save" id="editXtreamModalSave">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IPTV APPS MODALS -->
+
+    <!-- Modal Add IPTV App -->
+    <div class="modal-overlay" id="addAppModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add IPTV App</h3>
+                <div class="modal-close" id="addAppModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="add-app-name">App Name</label>
+                    <input type="text" id="add-app-name" placeholder="Enter app name (e.g., IPTV Smarters)" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label for="add-app-url">Download URL</label>
+                    <input type="text" id="add-app-url" placeholder="https://example.com/app.apk" autocomplete="off">
+                </div>
+
+                <div class="instruction-text">
+                    Add a new IPTV application with its direct download link. Users will be able to copy this link.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="addAppModalCancel">Cancel</button>
+                <button class="modal-btn save" id="addAppModalSave">Add App</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit IPTV App -->
+    <div class="modal-overlay" id="editAppModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit IPTV App</h3>
+                <div class="modal-close" id="editAppModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-app-id">
+                <div class="input-group">
+                    <label for="edit-app-name">App Name</label>
+                    <input type="text" id="edit-app-name" placeholder="Enter app name" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label for="edit-app-url">Download URL</label>
+                    <input type="text" id="edit-app-url" placeholder="https://example.com/app.apk" autocomplete="off">
+                </div>
+
+                <div class="instruction-text">
+                    Update the IPTV application details.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="editAppModalCancel">Cancel</button>
+                <button class="modal-btn save" id="editAppModalSave">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Delete IPTV App Confirmation -->
+    <div class="modal-overlay delete-app-modal" id="deleteAppModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm App Deletion</h3>
+                <div class="modal-close" id="deleteAppModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="delete-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="warning-text">Are you sure you want to delete this IPTV App?</div>
+
+                <div class="app-info" id="deleteAppInfo">
+                    <!-- App info will be filled dynamically -->
+                </div>
+
+                <div class="danger-text">
+                    <i class="fas fa-exclamation-circle"></i> 
+                    This action cannot be undone. App data will be permanently deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="deleteAppModalCancel">Cancel</button>
+                <button class="modal-btn delete" id="deleteAppModalConfirm">Delete App</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Telegram -->
+    <div class="modal-overlay" id="editTelegramModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Telegram Links</h3>
+                <div class="modal-close" id="editTelegramModalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="edit-telegram-group">Telegram Group</label>
+                    <input type="text" id="edit-telegram-group" placeholder="https://t.me/..." autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label for="edit-telegram-channel">Telegram Channel</label>
+                    <input type="text" id="edit-telegram-channel" placeholder="https://t.me/..." autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label for="edit-telegram-contact">Private Contact</label>
+                    <input type="text" id="edit-telegram-contact" placeholder="@username" autocomplete="off">
+                </div>
+
+                <div class="instruction-text">
+                    Update your Telegram communication links. These will be available for all users to view and copy.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="editTelegramModalCancel">Cancel</button>
+                <button class="modal-btn save" id="editTelegramModalSave">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TICKET SYSTEM MODALS -->
+
+    <!-- Delete Ticket Confirmation Modal -->
+    <div class="delete-ticket-modal" id="delete-confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-trash-alt"></i>
+                    Confirm Delete
+                </h3>
+                <div class="modal-close" id="delete-modal-close">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="warning-text">
+                    Are you sure you want to delete this ticket?
+                </div>
+
+                <div class="ticket-info" id="delete-ticket-info">
+                    <div class="ticket-info-item">
+                        <span class="ticket-info-label">Ticket ID:</span>
+                        <span class="ticket-info-value" id="delete-ticket-id"></span>
+                    </div>
+                    <div class="ticket-info-item">
+                        <span class="ticket-info-label">Subject:</span>
+                        <span class="ticket-info-value" id="delete-ticket-subject"></span>
+                    </div>
+                    <div class="ticket-info-item">
+                        <span class="ticket-info-label">Category:</span>
+                        <span class="ticket-info-value" id="delete-ticket-category"></span>
+                    </div>
+                    <div class="ticket-info-item">
+                        <span class="ticket-info-label">Priority:</span>
+                        <span class="ticket-info-value" id="delete-ticket-priority"></span>
+                    </div>
+                    <div class="ticket-info-item">
+                        <span class="ticket-info-label">Status:</span>
+                        <span class="ticket-info-value" id="delete-ticket-status"></span>
+                    </div>
+                    <div class="ticket-info-item">
+                        <span class="ticket-info-label">Created:</span>
+                        <span class="ticket-info-value" id="delete-ticket-created"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" id="cancel-delete-btn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="modal-btn modal-btn-confirm" id="confirm-delete-btn">
+                    <i class="fas fa-trash-alt"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <div class="form-container" id="main-container">
+            <div class="header">
+                <!-- Logout Button (Hidden by default) -->
+                <div class="logout-icon-btn" id="header-logout-btn" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+
+                <!-- Back to Dashboard Button (Hidden by default) -->
+                <div class="back-to-dashboard-btn" id="back-to-dashboard-btn" style="display: none;">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+
+                <!-- Logo -->
+                <div class="logo-container">
+                    <div class="logo">
+                        <span class="logo-main">🇩🇿 AHMEDTECH 🇩🇿</span>
+                        <span class="logo-sub">🔥 DZ-IPTV 🔥</span>
+                    </div>
+                </div>
+
+                <!-- DateTime -->
+                <div class="datetime-container">
+                    <div class="datetime" id="datetime">
+                        <span id="date"></span> | <span id="time"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="dashboard-section" style="display: none;">
+                <h2 class="dashboard-title">Dashboard</h2>
+
+                <div class="dashboard-cards">
+                    <!-- User Management Card -->
+                    <div class="dashboard-card user-management-card" id="user-management-card">
+                        <div class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="card-title">User Management</h3>
+                    </div>
+
+                    <!-- Settings Card -->
+                    <div class="dashboard-card settings-card" id="settings-card">
+                        <div class="card-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 class="card-title">System Settings</h3>
+                    </div>
+
+                    <!-- Free MAC's Card -->
+                    <div class="dashboard-card free-mac-card" id="free-mac-card">
+                        <div class="card-icon">
+                            <i class="fas fa-tv"></i>
+                        </div>
+                        <h3 class="card-title">Free MAC's</h3>
+                    </div>
+
+                    <!-- Free Xtream Card -->
+                    <div class="dashboard-card free-xtream-card" id="free-xtream-card">
+                        <div class="card-icon">
+                            <i class="fas fa-satellite-dish"></i>
+                        </div>
+                        <h3 class="card-title">Free Xtream</h3>
+                    </div>
+
+                    <!-- Ticket System Card -->
+                    <div class="dashboard-card ticket-system-card" id="ticket-system-card">
+                        <div class="card-icon">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <h3 class="card-title">Ticket System</h3>
+                    </div>
+
+                    <!-- Telegram Communication Card -->
+                    <div class="dashboard-card telegram-card" id="telegram-card">
+                        <div class="card-icon">
+                            <i class="fab fa-telegram"></i>
+                        </div>
+                        <h3 class="card-title">Telegram</h3>
+                    </div>
+
+                    <!-- IPTV Apps Card -->
+                    <div class="dashboard-card iptv-apps-card" id="iptv-apps-card">
+                        <div class="card-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="card-title">IPTV Apps</h3>
+                    </div>
+                </div>
+            </div>
+
+                        <!-- System Settings Section -->
+            <div id="system-settings-section" class="system-settings-section" style="display: none;">
+                <div class="system-settings-header">
+                    <h2 class="system-settings-title">System Settings</h2>
+                </div>
+
+                <div class="system-settings-cards">
+                    <!-- Backup System Card -->
+                    <div class="system-card backup-card" id="backup-card">
+                        <div class="system-card-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="system-card-content">
+                            <h3 class="system-card-title">Backup System</h3>
+                            <p class="system-card-desc">Manage system backups and restore points</p>
+                        </div>
+                        <div class="system-card-actions">
+                            <button class="system-card-btn" id="create-backup-btn">
+                                <i class="fas fa-download"></i>
+                                Create Backup
+                            </button>
+                            <button class="system-card-btn secondary" id="restore-backup-btn">
+                                <i class="fas fa-upload"></i>
+                                Restore
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Encryption Key Management Card -->
+                    <div class="system-card encryption-card" id="encryption-card">
+                        <div class="system-card-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <div class="system-card-content">
+                            <h3 class="system-card-title">Encryption Key Management</h3>
+                            <p class="system-card-desc">Rotate keys and configure auto-rotation</p>
+                        </div>
+                        <div class="system-card-actions">
+                            <button class="system-card-btn" id="rotate-key-btn">
+                                <i class="fas fa-sync-alt"></i>
+                                Rotate Key
+                            </button>
+                            <div class="auto-rotate-toggle">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="auto-rotate-toggle">
+                                    <span class="toggle-slider"></span>
+                                    <span class="toggle-text">Auto-rotate</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Statistics Card -->
+                    <div class="system-card statistics-card" id="statistics-card">
+                        <div class="system-card-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="system-card-content">
+                            <h3 class="system-card-title">User Statistics</h3>
+                            <p class="system-card-desc">View system usage statistics</p>
+                        </div>
+                        <div class="statistics-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-total-users">0</div>
+                                <div class="stat-label">Total Users</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-active-users">0</div>
+                                <div class="stat-label">Active Users</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-total-macs">0</div>
+                                <div class="stat-label">MAC Addresses</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-total-xtreams">0</div>
+                                <div class="stat-label">Xtream Accounts</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-total-apps">0</div>
+                                <div class="stat-label">IPTV Apps</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-total-tickets">0</div>
+                                <div class="stat-label">Tickets</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Management Section -->
+            <div id="user-management-section" class="user-management-section" style="display: none;">
+                <div class="user-management-header">
+                    <h2 class="user-management-title">User Management</h2>
+                    <button class="add-user-btn" id="add-user-btn">
+                        <i class="fas fa-plus"></i>
+                        Add User
+                    </button>
+                </div>
+
+                <div class="users-table-container">
+                    <table class="users-table" id="users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Will be filled dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Free MAC Section -->
+            <div id="free-mac-section" class="free-mac-section" style="display: none;">
+                <div class="free-mac-header">
+                    <h2 class="free-mac-title">Free MAC's</h2>
+                    <button class="add-mac-btn" id="add-mac-btn">
+                        <i class="fas fa-plus"></i>
+                        Add MAC
+                    </button>
+                </div>
+
+                <div class="free-mac-cards" id="free-mac-cards">
+                    <!-- MAC cards will be filled dynamically -->
+                </div>
+            </div>
+
+            <!-- Free Xtream Section -->
+            <div id="free-xtream-section" class="free-xtream-section" style="display: none;">
+                <div class="free-xtream-header">
+                    <h2 class="free-xtream-title">Free Xtream</h2>
+                    <button class="add-xtream-btn" id="add-xtream-btn">
+                        <i class="fas fa-plus"></i>
+                        Add Xtream
+                    </button>
+                </div>
+
+                <div class="free-xtream-cards" id="free-xtream-cards">
+                    <!-- Xtream cards will be filled dynamically -->
+                </div>
+            </div>
+
+            <!-- IPTV Apps Section -->
+            <div id="iptv-apps-section" class="iptv-apps-section" style="display: none;">
+                <div class="iptv-apps-header">
+                    <h2 class="iptv-apps-title">IPTV Applications</h2>
+                    <button class="add-app-btn" id="add-app-btn">
+                        <i class="fas fa-plus"></i>
+                        Add App
+                    </button>
+                </div>
+
+                <div class="iptv-apps-cards" id="iptv-apps-cards">
+                    <!-- IPTV Apps cards will be filled dynamically -->
+                </div>
+            </div>
+
+            <!-- Telegram Communication Section -->
+            <div id="telegram-section" class="telegram-section" style="display: none;">
+                <div class="telegram-header">
+                    <h2 class="telegram-title">Telegram Communication</h2>
+                    <button class="edit-telegram-btn" id="edit-telegram-btn" style="display: none;">
+                        <i class="fas fa-edit"></i>
+                        Edit Links
+                    </button>
+                </div>
+
+                <div class="telegram-cards" id="telegram-cards">
+                    <!-- Telegram cards will be filled dynamically -->
+                </div>
+            </div>
+
+            <!-- TICKET SYSTEM SECTIONS -->
+
+            <!-- Ticket List Section -->
+            <div id="ticket-section" class="ticket-section" style="display: none;">
+                <div class="ticket-header">
+                    <h2 class="ticket-title">Support Tickets</h2>
+                    <button class="new-ticket-btn" id="new-ticket-btn">
+                        <i class="fas fa-plus"></i>
+                        New Ticket
+                    </button>
+                </div>
+
+                <div class="tickets-list">
+                    <table class="tickets-table" id="tickets-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Subject</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tickets-table-body">
+                            <!-- Will be filled dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- New Ticket Section -->
+            <div id="new-ticket-section" class="new-ticket-section" style="display: none;">
+                <button class="back-to-tickets-btn" id="back-to-tickets-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Tickets
+                </button>
+
+                <h2 class="ticket-title">Create New Ticket</h2>
+
+                <div class="input-group">
+                    <label for="ticket-subject">Subject</label>
+                    <input type="text" id="ticket-subject" placeholder="Enter ticket subject">
+                </div>
+
+                <div class="input-group">
+                    <label for="ticket-category">Category</label>
+                    <select id="ticket-category">
+                        <option value="technical">Technical</option>
+                        <option value="billing">Billing</option>
+                        <option value="account">Account</option>
+                        <option value="feature">Feature Request</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="ticket-priority">Priority</label>
+                    <select id="ticket-priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="ticket-description">Description</label>
+                    <textarea id="ticket-description" placeholder="Describe your issue in detail..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="create-ticket-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Ticket
+                    </button>
+                    <button class="btn btn-secondary" id="cancel-new-ticket-btn">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Edit Ticket Section -->
+            <div id="edit-ticket-section" class="edit-ticket-section" style="display: none;">
+                <button class="back-to-tickets-btn" id="back-from-edit-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Ticket
+                </button>
+
+                <h2 class="ticket-title">Edit Ticket</h2>
+
+                <input type="hidden" id="edit-ticket-id">
+
+                <div class="input-group">
+                    <label for="edit-ticket-subject">Subject</label>
+                    <input type="text" id="edit-ticket-subject" placeholder="Enter ticket subject">
+                </div>
+
+                <div class="input-group">
+                    <label for="edit-ticket-category">Category</label>
+                    <select id="edit-ticket-category">
+                        <option value="technical">Technical</option>
+                        <option value="billing">Billing</option>
+                        <option value="account">Account</option>
+                        <option value="feature">Feature Request</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="edit-ticket-priority">Priority</label>
+                    <select id="edit-ticket-priority">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="edit-ticket-description">Description</label>
+                    <textarea id="edit-ticket-description" placeholder="Describe your issue in detail..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="save-edit-btn">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
+                    <button class="btn btn-secondary" id="cancel-edit-btn">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ticket Detail Section -->
+            <div id="ticket-detail-section" class="ticket-detail-section" style="display: none;">
+                <button class="back-to-tickets-btn" id="back-to-tickets-detail-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Tickets
+                </button>
+
+                <div class="ticket-detail-header">
+                    <div class="ticket-detail-actions">
+                        <button class="detail-action-btn edit-detail-btn" id="edit-ticket-btn">
+                            <i class="fas fa-edit"></i>
+                            Edit
+                        </button>
+                        <button class="detail-action-btn delete-detail-btn" id="delete-ticket-btn">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+
+                    <h2 class="ticket-detail-title" id="ticket-detail-title"></h2>
+
+                    <div class="ticket-detail-info">
+                        <div class="ticket-info-item">
+                            <i class="fas fa-hashtag"></i>
+                            <span>ID: <span class="ticket-info-value" id="ticket-detail-id"></span></span>
+                        </div>
+                        <div class="ticket-info-item">
+                            <i class="fas fa-folder"></i>
+                            <span>Category: <span class="ticket-info-value" id="ticket-detail-category"></span></span>
+                        </div>
+                        <div class="ticket-info-item">
+                            <i class="fas fa-flag"></i>
+                            <span>Priority: <span class="ticket-info-value" id="ticket-detail-priority"></span></span>
+                        </div>
+                        <div class="ticket-info-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Status: <span class="ticket-info-value" id="ticket-detail-status"></span></span>
+                        </div>
+                        <div class="ticket-info-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Created: <span class="ticket-info-value" id="ticket-detail-created"></span></span>
+                        </div>
+                        <div class="ticket-info-item">
+                            <i class="fas fa-clock"></i>
+                            <span>Updated: <span class="ticket-info-value" id="ticket-detail-updated"></span></span>
+                        </div>
+                    </div>
+
+                    <div class="ticket-description" id="ticket-detail-description"></div>
+                </div>
+
+                <div class="ticket-messages">
+                    <h3 class="messages-title">
+                        <i class="fas fa-comments"></i>
+                        Messages
+                    </h3>
+                    <div class="messages-container" id="ticket-messages-container">
+                        <!-- Messages will be filled dynamically -->
+                    </div>
+                </div>
+
+                <div class="reply-section" id="reply-section">
+                    <h3 class="reply-title">
+                        <i class="fas fa-reply"></i>
+                        Add Reply
+                    </h3>
+                    <textarea class="reply-input" id="reply-input" placeholder="Type your reply here..."></textarea>
+                    <button class="reply-btn" id="reply-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Send Reply
+                    </button>
+                </div>
+            </div>
+
+            <!-- LOGIN FORM CONTAINER -->
+            <div class="form" id="login-form-container">
+                <!-- Login Form -->
+                <div id="login-section" class="form-section active">
+                    <div class="input-group">
+                        <input type="email" id="login-email" placeholder="Email" autocomplete="email">
+                    </div>
+
+                    <div class="input-group password-input">
+                        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+                        <div class="password-toggle" data-target="login-password">
+                            <i class="far fa-eye"></i>
+                        </div>
+                    </div>
+
+                    <div class="remember-forgot">
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember-me" class="remember-checkbox">
+                            <label for="remember-me">Remember me</label>
+                        </div>
+                        <a class="forgot-password-link" id="show-forgot">Forgot Password?</a>
+                    </div>
+
+                    <button class="btn" id="login-btn">Login</button>
+
+                    <div class="switch-form">
+                        Don't have an account? <a id="show-register">Register Now</a>
+                    </div>
+                </div>
+
+                <!-- Registration Form -->
+                <div id="register-section" class="form-section">
+                    <div class="two-column-layout">
+                        <div class="input-group">
+                            <input type="text" id="register-name" placeholder="Full Name" autocomplete="name">
+                        </div>
+
+                        <div class="input-group">
+                            <input type="email" id="register-email" placeholder="Email" autocomplete="email">
+                        </div>
+
+                        <div class="input-group password-input">
+                            <input type="password" id="register-password" placeholder="Password" autocomplete="new-password">
+                            <div class="password-toggle" data-target="register-password">
+                                <i class="far fa-eye"></i>
+                            </div>
+                        </div>
+
+                        <div class="input-group password-input">
+                            <input type="password" id="register-confirm" placeholder="Confirm Password" autocomplete="new-password">
+                            <div class="password-toggle" data-target="register-confirm">
+                                <i class="far fa-eye"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Role Selection (Hidden for normal users) -->
+                    <div id="admin-role-selector" style="display: none;">
+                        <div class="instruction-text">
+                            Select Account Type (Admin Only)
+                        </div>
+                        <div class="role-selector">
+                            <div class="role-option user selected" data-role="user">
+                                <i class="fas fa-user role-icon"></i>
+                                User
+                                <div style="font-size: 10px; margin-top: 3px;">Copy Only</div>
+                            </div>
+                            <div class="role-option admin" data-role="admin">
+                                <i class="fas fa-user-shield role-icon"></i>
+                                Admin
+                                <div style="font-size: 10px; margin-top: 3px;">Limited Access</div>
+                            </div>
+                            <div class="role-option owner" data-role="owner">
+                                <i class="fas fa-crown role-icon"></i>
+                                Owner
+                                <div style="font-size: 10px; margin-top: 3px;">Full Access</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="instruction-text">
+                        Create your account (Default: User role with copy permissions only)
+                    </div>
+
+                    <button class="btn" id="register-btn">Create Account</button>
+
+                    <div class="switch-form">
+                        Already have an account? <a id="show-login">Login</a>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Form -->
+                <div id="forgot-section" class="form-section">
+                    <div class="two-column-layout">
+                        <div class="input-group">
+                            <input type="email" id="forgot-email" placeholder="Email" autocomplete="email">
+                        </div>
+
+                        <div class="input-group password-input">
+                            <input type="password" id="forgot-new-password" placeholder="New Password" autocomplete="new-password">
+                            <div class="password-toggle" data-target="forgot-new-password">
+                                <i class="far fa-eye"></i>
+                            </div>
+                        </div>
+
+                        <div class="input-group password-input">
+                            <input type="password" id="forgot-confirm-password" placeholder="Confirm New Password" autocomplete="new-password">
+                            <div class="password-toggle" data-target="forgot-confirm-password">
+                                <i class="far fa-eye"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="instruction-text">
+                        Enter your email to reset your password. A reset link will be sent to your email.
+                    </div>
+
+                    <button class="btn" id="forgot-btn">Reset Password</button>
+
+                    <div class="switch-form">
+                        Remembered your password? <a id="show-login2">Login</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-footer">
+                © 2026 🇩🇿 DZ-IPTV 🇩🇿 System. All rights reserved.
+            </div>
+        </div>
+    </div>
+
+<!-- Vercel Environment Variables Injection -->
+<script src="inject-env.js"></script>
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

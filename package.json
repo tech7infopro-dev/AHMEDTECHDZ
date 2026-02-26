@@ -1,0 +1,22 @@
+{
+  "name": "ahmedtech-dz-iptv",
+  "version": "1.0.0",
+  "description": "AHMEDTECH DZ IPTV - User Management System with Firebase Sync",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js",
+    "vercel-build": "node build.js",
+    "start": "npx serve ."
+  },
+  "keywords": ["iptv", "user-management", "firebase", "vercel"],
+  "author": "AHMEDTECH",
+  "license": "MIT",
+  "devDependencies": {
+    "fs-extra": "^11.1.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
+
+
