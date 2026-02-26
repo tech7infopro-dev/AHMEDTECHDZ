@@ -26,7 +26,7 @@ class EmailValidator {
 }
 
 // ============================================
-// ENVIRONMENT CONFIGURATION HELPER - FIXED v2
+// ENVIRONMENT CONFIGURATION HELPER - SECURE VERSION
 // ============================================
 class EnvironmentConfig {
     constructor() {
@@ -41,99 +41,47 @@ class EnvironmentConfig {
                 window.location.hostname.includes('vercel'));
     }
 
-    async waitForEnv() {
-        return new Promise((resolve) => {
-            if (typeof window.ENV !== 'undefined' && 
-                window.ENV.NEXT_PUBLIC_FIREBASE_API_KEY && 
-                !window.ENV.NEXT_PUBLIC_FIREBASE_API_KEY.includes('%')) {
-                console.log('[Environment] Environment variables found');
-                resolve();
-                return;
-            }
-            
-            window.addEventListener('env-loaded', () => resolve(), { once: true });
-            
-            setTimeout(() => {
-                console.log('[Environment] Timeout - using CONFIG fallback');
-                resolve();
-            }, 1000);
-        });
-    }
-
-    loadFirebaseConfig() {
-        console.log('[Environment] Loading Firebase config...');
-
-        let apiKey = null;
-        let projectId = null;
+    /**
+     * 🛡️ النسخة الأمنية: جلب الإعدادات من API بدلاً من meta tags
+     */
+    async loadFirebaseConfig() {
+        console.log('[Environment] Loading Firebase config from secure API...');
         
-        try {
-            apiKey = getEnv('NEXT_PUBLIC_FIREBASE_API_KEY');
-            projectId = getEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
-        } catch (e) {
-            console.log('[Environment] getEnv not available');
-        }
-
-        const isValidEnvValue = (val) => {
-            return val && 
-                   typeof val === 'string' && 
-                   val.length > 10 && 
-                   !val.includes('%') &&
-                   val !== 'your-firebase-api-key-here' &&
-                   val !== 'your-project-id';
-        };
-
-        if (isValidEnvValue(apiKey) && isValidEnvValue(projectId)) {
-            console.log('[Environment] ✅ Using Environment Variables');
-            
-            const config = {
-                apiKey: apiKey,
-                authDomain: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN') || `${projectId}.firebaseapp.com`,
-                projectId: projectId,
-                storageBucket: getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET') || `${projectId}.appspot.com`,
-                messagingSenderId: getEnv('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'),
-                appId: getEnv('NEXT_PUBLIC_FIREBASE_APP_ID'),
-                measurementId: getEnv('NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID')
-            };
-            
+        // استدعاء الدالة من config.js
+        const loaded = await window.loadSecureConfig();
+        
+        if (loaded && CONFIG.FIREBASE.API_KEY) {
+            console.log('[Environment] ✅ Using secure API configuration');
             this.configLoaded = true;
-            return config;
+            
+            return {
+                apiKey: CONFIG.FIREBASE.API_KEY,
+                authDomain: CONFIG.FIREBASE.AUTH_DOMAIN,
+                projectId: CONFIG.FIREBASE.PROJECT_ID,
+                storageBucket: CONFIG.FIREBASE.STORAGE_BUCKET,
+                messagingSenderId: CONFIG.FIREBASE.MESSAGING_SENDER_ID,
+                appId: CONFIG.FIREBASE.APP_ID,
+                measurementId: CONFIG.FIREBASE.MEASUREMENT_ID
+            };
         }
-
-        console.log('[Environment] ⚠️ Using CONFIG fallback (local values)');
-        console.log('[Environment] API Key:', CONFIG.FIREBASE.API_KEY ? '✅ Set' : '❌ Missing');
-        console.log('[Environment] Project ID:', CONFIG.FIREBASE.PROJECT_ID);
         
-        this.configLoaded = true;
-        return {
-            apiKey: CONFIG.FIREBASE.API_KEY,
-            authDomain: CONFIG.FIREBASE.AUTH_DOMAIN,
-            projectId: CONFIG.FIREBASE.PROJECT_ID,
-            storageBucket: CONFIG.FIREBASE.STORAGE_BUCKET,
-            messagingSenderId: CONFIG.FIREBASE.MESSAGING_SENDER_ID,
-            appId: CONFIG.FIREBASE.APP_ID,
-            measurementId: CONFIG.FIREBASE.MEASUREMENT_ID
-        };
+        console.error('[Environment] ❌ Failed to load secure config');
+        this.configLoaded = false;
+        return null;
     }
 
     isValidConfig(config) {
         const valid = config && 
                config.apiKey && 
-               config.apiKey !== 'your-firebase-api-key-here' &&
                config.apiKey.length > 10 &&
                config.projectId && 
                config.projectId !== 'your-project-id';
         
         console.log('[Environment] Config valid:', valid);
-        if (!valid) {
-            console.error('[Environment] ❌ Invalid config:', {
-                hasApiKey: !!config.apiKey,
-                apiKeyLength: config.apiKey?.length,
-                projectId: config.projectId
-            });
-        }
         return valid;
     }
 }
+
 
 // ============================================
 // FIREBASE MANAGER - EMAIL AUTHENTICATION VERSION
@@ -158,78 +106,26 @@ class FirebaseManager {
     }
 
     async init() {
-        try {
-            console.log('[Firebase] Starting initialization...');
+    try {
+        console.log('[Firebase] Starting initialization...');
 
-            await envConfig.waitForEnv();
-            const firebaseConfig = envConfig.loadFirebaseConfig();
-
-            if (!envConfig.isValidConfig(firebaseConfig)) {
-                console.error('[Firebase] Invalid configuration');
-                this.isInitialized = false;
-                this.syncEnabled = false;
-                return false;
-            }
-
-            console.log('[Firebase] Config valid, initializing...');
-
-            if (typeof firebase === 'undefined') {
-                console.error('[Firebase] Firebase SDK not loaded!');
-                return false;
-            }
-
-            if (!firebase.apps.length) {
-                this.app = firebase.initializeApp(firebaseConfig);
-                console.log('[Firebase] App initialized');
-            } else {
-                this.app = firebase.app();
-                console.log('[Firebase] Using existing app');
-            }
-
-            this.db = firebase.firestore();
-
-            try {
-                await this.db.enablePersistence({ 
-                    synchronizeTabs: true
-                });
-                console.log('[Firebase] ✅ Multi-tab persistence enabled');
-            } catch (err) {
-                if (err.code === 'failed-precondition') {
-                    console.warn('[Firebase] Persistence enabled in another tab');
-                } else {
-                    console.warn('[Firebase] Persistence error:', err);
-                }
-            }
-
-            this.auth = firebase.auth();
-
-            this.setupNetworkListeners();
-            this.loadOfflineQueue();
-
-            this.setupAuthStateListener();
-
-            this.isInitialized = true;
-            this.syncEnabled = CONFIG.FIREBASE.SYNC.ENABLED;
-
-            console.log('[Firebase] ✅ Initialized successfully');
-
-            console.log('[Firebase] 🔄 Loading initial data from server...');
-            await this.loadInitialDataFromServer();
-            this.initialLoadComplete = true;
-            console.log('[Firebase] ✅ Initial data load complete');
-
-            this.setupRealtimeListeners();
-            this.setupAutoSync();
-
-            return true;
-
-        } catch (error) {
-            console.error('[Firebase] ❌ Initialization error:', error);
+        // 🛡️ جلب الإعدادات من API الأمني
+        const firebaseConfig = await envConfig.loadFirebaseConfig();
+        
+        if (!firebaseConfig) {
+            console.error('[Firebase] ❌ Could not load configuration from API');
             this.isInitialized = false;
             this.syncEnabled = false;
+            
+            // عرض رسالة خطأ للمستخدم
+            notificationSystem.error(
+                'Configuration Error', 
+                'Failed to load secure configuration. Please refresh the page.', 
+                10
+            );
+            
             return false;
         }
-    }
 
     setupAuthStateListener() {
         this.auth.onAuthStateChanged((user) => {
