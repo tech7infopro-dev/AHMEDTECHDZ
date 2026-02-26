@@ -18,7 +18,7 @@
             justify-content: center;
             align-items: center;
             padding: 15px;
-            background-image: url('back.jpeg');
+            background-image: url('/back.jpeg');
             background-size: cover;
             background-position: center;
             background-blend-mode: overlay;
