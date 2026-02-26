@@ -1,16 +1,14 @@
 // ============================================
-// SERVICE WORKER - PWA - SECURE VERSION
+// SERVICE WORKER - PWA
 // ============================================
 
-const CACHE_NAME = 'ahmedtech-v1';
+const CACHE_NAME = 'techpro-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/style.css',
   '/script.js',
-  '/config.js',
-  '/inject-env.js',
-  '/sw.js'
+  '/config.js'
 ];
 
 // تثبيت
@@ -37,24 +35,11 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// جلب البيانات - معدل للسماح بـ CDN و Firebase
+// جلب البيانات
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-  
-  // ✅ السماح بـ Font Awesome وكل الـ CDNs
-  if (url.hostname.includes('cdnjs.cloudflare.com') ||
-      url.hostname.includes('fonts.googleapis.com') ||
-      url.hostname.includes('fonts.gstatic.com') ||
-      url.hostname.includes('www.gstatic.com') ||
-      url.hostname.includes('apis.google.com')) {
-    // لا تتدخل في طلبات CDN
-    return;
-  }
-  
-  // ✅ السماح بـ Firebase
-  if (url.hostname.includes('firebase') || 
-      url.hostname.includes('googleapis.com') ||
-      url.hostname.includes('firebaseio.com')) {
+  // تخطي Firebase
+  if (event.request.url.includes('firebase') || 
+      event.request.url.includes('googleapis')) {
     return;
   }
   

@@ -1,6 +1,6 @@
 // ============================================
 // CONFIGURATION FILE - Security Settings & Firebase
-// SECURE VERSION - No Sensitive Data in Console
+// Reads from Environment Variables (Vercel) or uses defaults
 // ============================================
 
 // Helper to get environment variable with fallback
@@ -10,12 +10,7 @@ const getEnv = (key, defaultValue = null) => {
         return process.env[key];
     }
 
-    // Check for window.ENV (injected by inject-env.js)
-    if (typeof window !== 'undefined' && window.ENV && window.ENV[key]) {
-        return window.ENV[key];
-    }
-
-    // Check for meta tags (legacy fallback)
+    // Check for meta tags (for client-side)
     const meta = document.querySelector(`meta[name="${key}"]`);
     if (meta && meta.content && !meta.content.includes('%') && meta.content !== 'your-api-key') {
         return meta.content;
@@ -26,6 +21,7 @@ const getEnv = (key, defaultValue = null) => {
 
 // ============================================
 // DEFAULT OWNER ACCOUNT - EMAIL BASED
+// ⚠️ IMPORTANT: Change these before deployment!
 // ============================================
 const DEFAULT_OWNER_EMAIL = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_EMAIL', 'admin@example.com');
 const DEFAULT_OWNER_NAME = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_NAME', 'ADMIN');
@@ -43,12 +39,11 @@ const DEFAULT_OWNER = {
     firebaseUid: null
 };
 
-// ============================================
-// MAIN CONFIGURATION OBJECT
-// ============================================
 const CONFIG = {
     // ============================================
     // FIREBASE CONFIGURATION
+    // ⚠️ IMPORTANT: Replace with your actual Firebase credentials!
+    // Get these from: Firebase Console → Project Settings → General → Your apps
     // ============================================
     FIREBASE: {
         API_KEY: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY', 'YOUR_FIREBASE_API_KEY_HERE'),
@@ -83,6 +78,8 @@ const CONFIG = {
 
     // ============================================
     // SECURITY CONFIGURATION
+    // ⚠️ IMPORTANT: Change these secrets before production!
+    // Use strong random strings for production
     // ============================================
     SECURITY: {
         PBKDF2: {
@@ -92,10 +89,12 @@ const CONFIG = {
             SALT_LENGTH: 32,
             LEGACY_ITERATIONS: 100000,
             AUTO_UPGRADE: true,
+            // ⚠️ Change this salt in production!
             SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', 'CHANGE_THIS_SALT_TO_RANDOM_STRING_32_CHARS_MIN')
         },
 
         SESSION: {
+            // ⚠️ Change this secret in production! Use a strong random string (64+ chars)
             SECRET: getEnv('SESSION_SECRET', 'CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET_KEY_MIN_64_CHARS'),
             TIMEOUT: parseInt(getEnv('SESSION_TIMEOUT', '3600000')),
             RENEWAL_THRESHOLD: 300000,
@@ -167,6 +166,7 @@ const CONFIG = {
         },
 
         ENCRYPTION: {
+            // ⚠️ Change this key in production! Use a strong random string (64+ chars)
             MASTER_KEY: getEnv('ENCRYPTION_KEY', 'CHANGE_THIS_TO_A_STRONG_RANDOM_ENCRYPTION_KEY_64_CHARS'),
             AUTO_ROTATE: getEnv('AUTO_ROTATE_KEYS', 'false') === 'true',
             ROTATION_INTERVAL_DAYS: parseInt(getEnv('KEY_ROTATION_INTERVAL', '30'))
@@ -333,19 +333,10 @@ const CONFIG = {
     },
 
     // ============================================
-    // SECURITY HEADERS - UPDATED FOR FIREBASE, FONT AWESOME & ALL CDNs
+    // SECURITY HEADERS
     // ============================================
     SECURITY_HEADERS: {
-        'Content-Security-Policy': "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://*.firebaseio.com https://*.googleapis.com https://www.gstatic.com https://apis.google.com; " +
-            "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
-            "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; " +
-            "img-src 'self' data: blob: https:; " +
-            "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://cdnjs.cloudflare.com https://www.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; " +
-            "frame-ancestors 'none'; " +
-            "base-uri 'self'; " +
-            "form-action 'self'; " +
-            "upgrade-insecure-requests;",
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://*.firebaseio.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;",
         'X-Frame-Options': 'DENY',
         'X-Content-Type-Options': 'nosniff',
         'X-XSS-Protection': '1; mode=block',
@@ -359,14 +350,7 @@ const CONFIG = {
     }
 };
 
-// 🛡️ Prevent modification
+// Prevent modification
 Object.freeze(CONFIG);
-Object.freeze(CONFIG.FIREBASE);
-Object.freeze(CONFIG.SECURITY);
-Object.freeze(CONFIG.PERMISSIONS);
-
-// ✅ Safe console log - only non-sensitive info
-console.log('[Config] ✅ Configuration loaded successfully');
-console.log('[Config] App:', CONFIG.SYSTEM.APP_NAME);
 
 
