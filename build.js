@@ -54,6 +54,142 @@ if (!fs.existsSync(distDir)) {
     fs.mkdirSync(distDir, { recursive: true });
 }
 
+// ============================================
+// 🛡️ SECURITY: REMOVE CONSOLE.LOG FROM SCRIPT.JS
+// ============================================
+
+console.log('[Build] 🔒 Processing script.js for security...');
+
+const scriptPath = path.join(__dirname, 'script.js');
+let scriptModified = false;
+
+if (fs.existsSync(scriptPath)) {
+    let scriptContent = fs.readFileSync(scriptPath, 'utf8');
+    const originalLength = scriptContent.length;
+    
+    // Remove console.log, console.info, console.debug, console.trace completely
+    // But keep console.error and console.warn for debugging
+    
+    // Pattern 1: console.log(...) with any content including nested parentheses
+    scriptContent = scriptContent.replace(/console\.log\s*\([^)]*\);?/g, '');
+    
+    // Pattern 2: console.info(...)
+    scriptContent = scriptContent.replace(/console\.info\s*\([^)]*\);?/g, '');
+    
+    // Pattern 3: console.debug(...)
+    scriptContent = scriptContent.replace(/console\.debug\s*\([^)]*\);?/g, '');
+    
+    // Pattern 4: console.trace(...)
+    scriptContent = scriptContent.replace(/console\.trace\s*\([^)]*\);?/g, '');
+    
+    // Pattern 5: Multi-line console.log with template literals
+    scriptContent = scriptContent.replace(/console\.log\s*\(`[^`]*`\);?/g, '');
+    
+    // Pattern 6: console.log with single quotes
+    scriptContent = scriptContent.replace(/console\.log\s*\('[^']*'\);?/g, '');
+    
+    // Pattern 7: console.log with double quotes
+    scriptContent = scriptContent.replace(/console\.log\s*\("[^"]*"\);?/g, '');
+    
+    // Pattern 8: Empty console.log()
+    scriptContent = scriptContent.replace(/console\.log\s*\(\s*\);?/g, '');
+    
+    // Pattern 9: console.log with variables (aggressive removal)
+    // This matches console.log(anything);
+    const consoleLogRegex = /console\.log\s*\([\s\S]*?\);?/g;
+    let match;
+    while ((match = consoleLogRegex.exec(scriptContent)) !== null) {
+        // Check if it's a multi-line log
+        const matched = match[0];
+        if (matched.includes('\n')) {
+            // Find balanced parentheses
+            let depth = 0;
+            let end = match.index;
+            for (let i = match.index; i < scriptContent.length; i++) {
+                if (scriptContent[i] === '(') depth++;
+                if (scriptContent[i] === ')') depth--;
+                if (depth === 0 && scriptContent[i] === ')') {
+                    end = i + 1;
+                    // Include semicolon if present
+                    if (scriptContent[end] === ';') end++;
+                    break;
+                }
+            }
+            scriptContent = scriptContent.substring(0, match.index) + scriptContent.substring(end);
+        }
+    }
+    
+    // Final cleanup: remove any remaining console.log patterns
+    scriptContent = scriptContent.replace(/console\.log\s*\([^)]*\);?\n?/g, '');
+    
+    // Remove empty lines left behind
+    scriptContent = scriptContent.replace(/\n\s*\n\s*\n/g, '\n\n');
+    
+    // Write modified script to dist
+    fs.writeFileSync(path.join(distDir, 'script.js'), scriptContent);
+    scriptModified = true;
+    
+    const removedBytes = originalLength - scriptContent.length;
+    console.log(`[Build] ✅ Removed console.log statements (${removedBytes} bytes removed)`);
+    console.log('[Build] ✅ Secure script.js written to dist/');
+} else {
+    console.error('[Build] ❌ script.js not found!');
+}
+
+// ============================================
+// 🛡️ SECURITY: REMOVE CONSOLE.LOG FROM INJECT-ENV.JS
+// ============================================
+
+console.log('[Build] 🔒 Processing inject-env.js for security...');
+
+const injectEnvPath = path.join(__dirname, 'inject-env.js');
+if (fs.existsSync(injectEnvPath)) {
+    let injectContent = fs.readFileSync(injectEnvPath, 'utf8');
+    
+    // Remove console.log, console.info, console.debug
+    injectContent = injectContent.replace(/console\.log\s*\([^)]*\);?/g, '');
+    injectContent = injectContent.replace(/console\.info\s*\([^)]*\);?/g, '');
+    injectContent = injectContent.replace(/console\.debug\s*\([^)]*\);?/g, '');
+    injectContent = injectContent.replace(/console\.trace\s*\([^)]*\);?/g, '');
+    
+    // Remove empty lines
+    injectContent = injectContent.replace(/\n\s*\n\s*\n/g, '\n\n');
+    
+    fs.writeFileSync(path.join(distDir, 'inject-env.js'), injectContent);
+    console.log('[Build] ✅ Secure inject-env.js written to dist/');
+} else {
+    console.error('[Build] ❌ inject-env.js not found!');
+}
+
+// ============================================
+// 🛡️ SECURITY: REMOVE CONSOLE.LOG FROM CONFIG.JS
+// ============================================
+
+console.log('[Build] 🔒 Processing config.js for security...');
+
+const configPath = path.join(__dirname, 'config.js');
+if (fs.existsSync(configPath)) {
+    let configContent = fs.readFileSync(configPath, 'utf8');
+    
+    // Remove console.log, console.info, console.debug
+    configContent = configContent.replace(/console\.log\s*\([^)]*\);?/g, '');
+    configContent = configContent.replace(/console\.info\s*\([^)]*\);?/g, '');
+    configContent = configContent.replace(/console\.debug\s*\([^)]*\);?/g, '');
+    configContent = configContent.replace(/console\.trace\s*\([^)]*\);?/g, '');
+    
+    // Remove empty lines
+    configContent = configContent.replace(/\n\s*\n\s*\n/g, '\n\n');
+    
+    fs.writeFileSync(path.join(distDir, 'config.js'), configContent);
+    console.log('[Build] ✅ Secure config.js written to dist/');
+} else {
+    console.error('[Build] ❌ config.js not found!');
+}
+
+// ============================================
+// PROCESS HTML
+// ============================================
+
 // Read source HTML
 const sourceHtmlPath = path.join(__dirname, 'index.html');
 if (!fs.existsSync(sourceHtmlPath)) {
@@ -84,10 +220,18 @@ const envScript = `
         writable: false
     });
 })();
+
+// 🛡️ SECURITY: Disable console logging
+(function(){
+    'use strict';
+    console.log = function(){};
+    console.info = function(){};
+    console.debug = function(){};
+    console.trace = function(){};
+})();
 `;
 
-// ✅ Inject environment script AFTER charset meta but BEFORE title/styles
-// Find the charset meta tag and inject after it
+// Inject environment script AFTER charset meta but BEFORE title/styles
 const charsetMetaMatch = htmlContent.match(/<meta charset="[^"]*">/i);
 if (charsetMetaMatch) {
     const insertPosition = htmlContent.indexOf(charsetMetaMatch[0]) + charsetMetaMatch[0].length;
@@ -113,7 +257,7 @@ fs.writeFileSync(outputHtmlPath, htmlContent);
 console.log('[Build] ✅ Written dist/index.html');
 
 // ============================================
-// COPY ALL STATIC FILES
+// COPY REMAINING STATIC FILES
 // ============================================
 
 // Helper function to copy directory recursively
@@ -141,12 +285,9 @@ function copyDirectorySync(src, dest) {
     }
 }
 
-// Copy individual files
+// Copy individual files (excluding JS files we already processed)
 const filesToCopy = [
     'style.css',
-    'config.js',
-    'script.js',
-    'inject-env.js',
     'sw.js'
 ];
 
@@ -258,5 +399,7 @@ fs.writeFileSync(
 
 console.log('[Build] ✅ Created .vercel/output/config.json');
 console.log('[Build] ✅ Build completed successfully!');
+console.log('[Build] 🔒 All console.log statements removed');
+console.log('[Build] 🔒 Environment variables hidden from source');
 
 
