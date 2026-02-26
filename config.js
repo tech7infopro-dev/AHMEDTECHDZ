@@ -1,24 +1,19 @@
 // ============================================
 // CONFIGURATION FILE - Security Settings & Firebase
-// Reads from Environment Variables (Vercel) via window.ENV
-// ⚠️ NEVER put real secrets here - use Vercel Environment Variables!
+// Reads from Environment Variables (Vercel) or uses defaults
 // ============================================
 
 // Helper to get environment variable with fallback
 const getEnv = (key, defaultValue = null) => {
-    // Priority 1: window.ENV (set by build.js with obfuscated values)
-    if (typeof window !== 'undefined' && window.ENV && window.ENV[key]) {
-        return window.ENV[key];
-    }
-
-    // Priority 2: window.process.env (for compatibility)
-    if (typeof window !== 'undefined' && window.process && window.process.env && window.process.env[key]) {
-        return window.process.env[key];
-    }
-
-    // Priority 3: Node.js process.env (during build)
+    // Check for Vercel env vars (injected at build time)
     if (typeof process !== 'undefined' && process.env && process.env[key]) {
         return process.env[key];
+    }
+
+    // Check for meta tags (for client-side)
+    const meta = document.querySelector(`meta[name="${key}"]`);
+    if (meta && meta.content && !meta.content.includes('%') && meta.content !== 'your-api-key') {
+        return meta.content;
     }
 
     return defaultValue;
@@ -26,7 +21,7 @@ const getEnv = (key, defaultValue = null) => {
 
 // ============================================
 // DEFAULT OWNER ACCOUNT - EMAIL BASED
-// ⚠️ IMPORTANT: Set these in Vercel Environment Variables!
+// ⚠️ IMPORTANT: Change these before deployment!
 // ============================================
 const DEFAULT_OWNER_EMAIL = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_EMAIL', 'admin@example.com');
 const DEFAULT_OWNER_NAME = getEnv('NEXT_PUBLIC_DEFAULT_OWNER_NAME', 'ADMIN');
@@ -47,7 +42,8 @@ const DEFAULT_OWNER = {
 const CONFIG = {
     // ============================================
     // FIREBASE CONFIGURATION
-    // ⚠️ IMPORTANT: Set these in Vercel Environment Variables!
+    // ⚠️ IMPORTANT: Replace with your actual Firebase credentials!
+    // Get these from: Firebase Console → Project Settings → General → Your apps
     // ============================================
     FIREBASE: {
         API_KEY: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY', 'YOUR_FIREBASE_API_KEY_HERE'),
@@ -58,6 +54,7 @@ const CONFIG = {
         APP_ID: getEnv('NEXT_PUBLIC_FIREBASE_APP_ID', '1:123456789:web:abcdef123456'),
         MEASUREMENT_ID: getEnv('NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID', 'G-XXXXXXXXXX'),
 
+        // Firestore Collections
         COLLECTIONS: {
             USERS: 'users',
             FREE_MACS: 'free_macs',
@@ -69,6 +66,7 @@ const CONFIG = {
             SYSTEM_CONFIG: 'system_config'
         },
 
+        // Sync Settings
         SYNC: {
             ENABLED: true,
             AUTO_SYNC: true,
@@ -80,6 +78,8 @@ const CONFIG = {
 
     // ============================================
     // SECURITY CONFIGURATION
+    // ⚠️ IMPORTANT: Change these secrets before production!
+    // Use strong random strings for production
     // ============================================
     SECURITY: {
         PBKDF2: {
@@ -89,10 +89,12 @@ const CONFIG = {
             SALT_LENGTH: 32,
             LEGACY_ITERATIONS: 100000,
             AUTO_UPGRADE: true,
+            // ⚠️ Change this salt in production!
             SALT: getEnv('NEXT_PUBLIC_PASSWORD_SALT', 'CHANGE_THIS_SALT_TO_RANDOM_STRING_32_CHARS_MIN')
         },
 
         SESSION: {
+            // ⚠️ Change this secret in production! Use a strong random string (64+ chars)
             SECRET: getEnv('SESSION_SECRET', 'CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET_KEY_MIN_64_CHARS'),
             TIMEOUT: parseInt(getEnv('SESSION_TIMEOUT', '3600000')),
             RENEWAL_THRESHOLD: 300000,
@@ -164,18 +166,25 @@ const CONFIG = {
         },
 
         ENCRYPTION: {
+            // ⚠️ Change this key in production! Use a strong random string (64+ chars)
             MASTER_KEY: getEnv('ENCRYPTION_KEY', 'CHANGE_THIS_TO_A_STRONG_RANDOM_ENCRYPTION_KEY_64_CHARS'),
             AUTO_ROTATE: getEnv('AUTO_ROTATE_KEYS', 'false') === 'true',
             ROTATION_INTERVAL_DAYS: parseInt(getEnv('KEY_ROTATION_INTERVAL', '30'))
         }
     },
 
+    // ============================================
+    // DEFAULT ACCOUNTS - EMAIL BASED
+    // ============================================
     DEFAULT_USERS: [DEFAULT_OWNER],
 
     DEFAULT_PASSWORDS: {
         [DEFAULT_OWNER_EMAIL]: DEFAULT_OWNER_PASSWORD
     },
 
+    // ============================================
+    // PERMISSIONS MATRIX
+    // ============================================
     PERMISSIONS: {
         owner: [
             { id: 'view_all_users', name: 'View All Users', allowed: true },
@@ -240,6 +249,9 @@ const CONFIG = {
         ]
     },
 
+    // ============================================
+    // RESOURCE PERMISSIONS
+    // ============================================
     MAC_PERMISSIONS: {
         owner: { canView: true, canAdd: true, canEdit: true, canDelete: true },
         admin: { canView: true, canAdd: true, canEdit: true, canDelete: true },
@@ -264,6 +276,9 @@ const CONFIG = {
         user: { canView: true, canAdd: false, canEdit: false, canDelete: false }
     },
 
+    // ============================================
+    // STORAGE KEYS
+    // ============================================
     STORAGE_KEYS: {
         USERS: 'iptv_users_v2',
         CURRENT_USER: 'iptv_current_user_v2',
@@ -294,6 +309,9 @@ const CONFIG = {
         OFFLINE_CHANGES: 'iptv_offline_changes'
     },
 
+    // ============================================
+    // SYSTEM SETTINGS
+    // ============================================
     SYSTEM: {
         CHECK_EXPIRY_INTERVAL: 3600000,
         MIN_PASSWORD_LENGTH: 8,
@@ -314,6 +332,9 @@ const CONFIG = {
         ENABLE_FIREBASE_SYNC: getEnv('ENABLE_FIREBASE_SYNC', 'true') === 'true'
     },
 
+    // ============================================
+    // SECURITY HEADERS
+    // ============================================
     SECURITY_HEADERS: {
         'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://*.firebaseio.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;",
         'X-Frame-Options': 'DENY',
@@ -331,3 +352,5 @@ const CONFIG = {
 
 // Prevent modification
 Object.freeze(CONFIG);
+
+
