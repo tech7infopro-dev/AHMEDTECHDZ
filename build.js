@@ -64,12 +64,12 @@ if (!fs.existsSync(sourceHtmlPath)) {
 let htmlContent = fs.readFileSync(sourceHtmlPath, 'utf8');
 
 // 🛡️ SECURITY: Remove ALL environment variable meta tags completely
-// Remove old meta tags placeholder
+// Remove old meta tags placeholder and all NEXT_PUBLIC meta tags
 const metaTagPattern = /<!-- Vercel Environment Variables -->[\s\S]*?<!-- \/Vercel Environment Variables -->/g;
 htmlContent = htmlContent.replace(metaTagPattern, '');
 
-// Remove individual meta tags if any
-const individualMetaPattern = /<meta name="NEXT_PUBLIC_[^"]*" content="[^"]*">/g;
+// Remove individual NEXT_PUBLIC meta tags
+const individualMetaPattern = /<meta name="NEXT_PUBLIC_[^"]*" content="[^"]*">\n?/g;
 htmlContent = htmlContent.replace(individualMetaPattern, '');
 
 // Generate obfuscated JavaScript with environment variables
@@ -86,13 +86,25 @@ const envScript = `
 })();
 `;
 
-// Inject environment script BEFORE any other scripts
-const headEndIndex = htmlContent.indexOf('</head>');
-if (headEndIndex !== -1) {
-    htmlContent = htmlContent.slice(0, headEndIndex) + 
-                  `<script>${envScript}</script>\n` + 
-                  htmlContent.slice(headEndIndex);
-    console.log('[Build] ✅ Injected secure environment variables');
+// ✅ Inject environment script AFTER charset meta but BEFORE title/styles
+// Find the charset meta tag and inject after it
+const charsetMetaMatch = htmlContent.match(/<meta charset="[^"]*">/i);
+if (charsetMetaMatch) {
+    const insertPosition = htmlContent.indexOf(charsetMetaMatch[0]) + charsetMetaMatch[0].length;
+    htmlContent = htmlContent.slice(0, insertPosition) + 
+                  `\n    <!-- Environment Variables -->\n    <script>${envScript}</script>\n    <!-- /Environment Variables -->` + 
+                  htmlContent.slice(insertPosition);
+    console.log('[Build] ✅ Injected secure environment variables after charset');
+} else {
+    // Fallback: inject after <head>
+    const headMatch = htmlContent.match(/<head>/i);
+    if (headMatch) {
+        const insertPosition = htmlContent.indexOf(headMatch[0]) + headMatch[0].length;
+        htmlContent = htmlContent.slice(0, insertPosition) + 
+                      `\n    <script>${envScript}</script>\n` + 
+                      htmlContent.slice(insertPosition);
+        console.log('[Build] ✅ Injected secure environment variables in head');
+    }
 }
 
 // Write processed HTML to dist
@@ -107,13 +119,11 @@ console.log('[Build] ✅ Written dist/index.html');
 // Helper function to copy directory recursively
 function copyDirectorySync(src, dest) {
     if (!fs.existsSync(src)) {
-        console.log(`[Build] ℹ️ Source not found: ${src}`);
         return;
     }
     
     if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest, { recursive: true });
-        console.log(`[Build] 📁 Created directory: ${path.basename(dest)}`);
     }
 
     const entries = fs.readdirSync(src, { withFileTypes: true });
@@ -154,16 +164,16 @@ filesToCopy.forEach(file => {
 
 // Copy static directories
 const staticDirs = [
-    'images',      // Images and icons
-    'img',         // Alternative images folder
-    'assets',      // General assets
-    'fonts',       // Fonts
-    'uploads',     // Uploads
-    'css',         // Additional CSS
-    'js',          // Additional JS
-    'media',       // Audio/Video
-    'icons',       // Icons
-    'data'         // Data files
+    'images',
+    'img',
+    'assets',
+    'fonts',
+    'uploads',
+    'css',
+    'js',
+    'media',
+    'icons',
+    'data'
 ];
 
 staticDirs.forEach(dirName => {
@@ -248,6 +258,5 @@ fs.writeFileSync(
 
 console.log('[Build] ✅ Created .vercel/output/config.json');
 console.log('[Build] ✅ Build completed successfully!');
-console.log('[Build] Summary: Environment variables are HIDDEN from HTML source');
 
 
